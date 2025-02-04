@@ -2,6 +2,7 @@ import { User } from "../../domain/entities/User";
 import { IUserRepository } from "../interface/IUserRepository";
 import bcrypt from "bcrypt";
 import JwtService from "../../infrastructure/services/JwtService";
+import passport from "passport";
 
 interface CreateUserDTO {
     name: string;
@@ -62,10 +63,38 @@ export class UserUseCase {
         const token = JwtService.generateToken(createdUser.id);
         const userResponse: UserResponse = { name: createdUser.name, email: createdUser.email };
 
-        return { user: userResponse, token };
+        return { user: userResponse, token};
 
       }
-    async checkUsernameAvailability(username: string): Promise<boolean> {
+
+    async userLogin(email: string, password: string) : Promise<{ user: UserResponse; token: string; message:string }> {
+        console.log("from use case email:",email,"password", password);
+        const user = await this.userRepository.findByEmail(email);
+        console.log("user from db", user);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        if (!user.password) {
+            throw new Error("User password is undefined");
+        }
+        const isVerified = await bcrypt.compare(password, user.password);
+        console.log("isVerified", isVerified);
+        if(isVerified){
+            if (!user.id) {
+                throw new Error("User ID is null");
+            }
+            const token = JwtService.generateToken(user.id);
+            const userResponse:UserResponse = {name: user.name, email: user.email} 
+            console.log("userResponse", userResponse);
+            return {user:userResponse, token, message: `${user.name}'s account verified`};
+        } else {
+            throw new Error("Invalid credentials");
+        }
+    }
+    async authenticateGoogle(req: any, res: any, next: any) {
+        passport.authenticate("google", { scope: ["email", "profile"] })(req, res, next);
+    }
+    async checkUsernameAvailability(username: string): Promise<boolean>{
         const user = await this.userRepository.findByUsername(username);
         return user;
     }

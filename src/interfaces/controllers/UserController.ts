@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { UserUseCase } from "../../application/useCases/UserUseCase";
+import JwtService from "../../infrastructure/services/JwtService";
 
 
 export class UserController {
@@ -19,10 +20,8 @@ export class UserController {
     async createUser(req: Request, res: Response): Promise<Response> {
         try {
             const {name, email, password, username, confirmPassword,termsAccepted, otp } = req.body;
-            console.log(otp,"I am here 1");
-            console.log("req.body",req.body);
             const user = await this.userCase.register({name:name, username:username, email:email, password:password, confirmPassword: confirmPassword, termsAccepted:termsAccepted, otp:otp});
-            return res.status(201).json({message:"User Creted Successfully", user});
+            return res.status(201).json({message:"User Created Successfully", user});
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(400).json({message: error.message});
@@ -31,6 +30,32 @@ export class UserController {
         }
     }
 
+    async googleAuth(req: Request, res: Response):Promise<Response> {
+        const user = req.user as any;
+        if(!user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+        const token = JwtService.generateToken(user.id);
+        res.redirect(`https://yourfrontend.com/auth-success?token=${token}`);
+        return res.status(200).json({ message: "Authorized" });
+
+    }
+
+    async loginUser(req: Request, res: Response): Promise<Response> {
+        try{
+            const {email, password} = req.body;
+            console.log("email:",email,"password", password);
+            const user = await this.userCase.userLogin(email, password);
+            console.log("user from login ", user)
+            return res.status(201).json({message:"User Verfied Successfully", user});
+
+        }catch (error) {
+            if (error instanceof Error) {
+                return res.status(400).json({message: error.message});
+            }
+            return res.status(400).json({message: "An unknown error occurred"});
+        }
+    }
     async checkUsernameAvailability(req: Request, res: Response): Promise<Response> {
         try{
             const {username} = req.query;

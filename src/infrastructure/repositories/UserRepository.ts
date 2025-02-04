@@ -55,6 +55,10 @@ export class UserRepositoryImpl implements IUserRepository {
             return false;
         }
     }
+    async findById(userId: string): Promise<User | null> {
+        const user = await UserModel.findById(userId);
+        return user ? new User(user.id, user.name, user.username, user.email, user.password) : null;
+    }
     
     async create(user: User): Promise<User> {
         const createdUser = await UserModel.create({
@@ -66,18 +70,12 @@ export class UserRepositoryImpl implements IUserRepository {
         return new User(createdUser.id, createdUser.name, createdUser.username, createdUser.email, createdUser.password);
     }
 
-    confirmPassword(password:string, confirmPassword:string):boolean {
-        if(password === confirmPassword) {
-            return true
-        }
-        return false;
-    }
-    istermsAccepted(termsAccepted: boolean): boolean {
-        return termsAccepted;
-    }
+
 
     async findByEmail(email: string): Promise<User | null> {
-        const user = await UserModel.findOne({ email, "contact.email_verified": true });
+        console.log(`Finding user by email: ${email}`);
+        const user = await UserModel.findOne({ email });
+        console.log(`User found: ${user}`);
         return user ? new User(user.id, user.name, user.username, user.email, user.password) : null;
     }
 
