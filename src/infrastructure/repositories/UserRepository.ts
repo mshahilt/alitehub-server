@@ -1,7 +1,7 @@
 import { User } from "../../domain/entities/User";
 import { IUserRepository } from "../../application/interface/IUserRepository";
 import UserModel from "../database/models/UserModel";
-import OtpModel from "../database/models/otpModel";
+import OtpModel from "../database/models/OtpModel";
 import { Otp } from "../../domain/entities/Otp";
 import { EmailService } from "../services/EmailService";
 
@@ -57,17 +57,18 @@ export class UserRepositoryImpl implements IUserRepository {
     }
     async findById(userId: string): Promise<User | null> {
         const user = await UserModel.findById(userId);
-        return user ? new User(user.id, user.name, user.username, user.email, user.password) : null;
+        return user ? new User({id:user.id, name:user.name, username:user.username, email:user.email, password:user.password}) : null;
     }
     
-    async create(user: User): Promise<User> {
+    async create(user:User): Promise<User> {
         const createdUser = await UserModel.create({
             name: user.name,
             email: user.email,
             password: user.password,
-            username: user.username
+            username: user.username,
+            profile_picture: user.profile_picture,
         });
-        return new User(createdUser.id, createdUser.name, createdUser.username, createdUser.email, createdUser.password);
+        return new User({id:createdUser.id, name:createdUser.name, username:createdUser.username, email:createdUser.email, password:createdUser.password});
     }
 
 
@@ -76,7 +77,7 @@ export class UserRepositoryImpl implements IUserRepository {
         console.log(`Finding user by email: ${email}`);
         const user = await UserModel.findOne({ email });
         console.log(`User found: ${user}`);
-        return user ? new User(user.id, user.name, user.username, user.email, user.password) : null;
+        return user ? new User({id:user.id, name:user.name, username:user.username, email:user.email, password:user.password}) : null;
     }
 
     async findByUsername(username: string): Promise<boolean> {

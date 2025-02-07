@@ -3,7 +3,6 @@ import { UserController } from "../controllers/UserController";
 import { UserUseCase } from "../../application/useCases/UserUseCase";
 import { UserRepositoryImpl } from "../../infrastructure/repositories/UserRepository";
 import { Request, Response } from "express";
-import passport from "../../infrastructure/config/googleAuth";
 
 const router = express.Router();
 const userRepository = new UserRepositoryImpl();
@@ -23,14 +22,10 @@ router.get('/checkUsernameAvailability', async (req: Request, res: Response) => 
 router.post('/generateOtp', async (req: Request, res: Response) => {
     await userController.generateOtp(req, res);
 })
-router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
-router.get(
-    "/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login" }),
-    async (req: Request, res: Response) => {
-        await userController.googleAuth(req, res);
-    }
-);
+router.post('/google-login', async(req: Request, res: Response) => {
+    await userController.googleAuth(req, res);
+})
+
 
 
   

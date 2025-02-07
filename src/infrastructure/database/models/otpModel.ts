@@ -7,7 +7,7 @@ interface IOtp extends Document {
     expiresAt: Date;
 }
 
-const otpSchema = new Schema<IOtp>({
+const OtpSchema = new Schema<IOtp>({
     code: {
         type: String,
         required: true,
@@ -27,6 +27,6 @@ const otpSchema = new Schema<IOtp>({
     },
 });
 
-const otpModel = model<IOtp>('Otp', otpSchema);
+const OtpModel = model<IOtp>('Otp', OtpSchema);
 
-export default otpModel;
+export default OtpModel;

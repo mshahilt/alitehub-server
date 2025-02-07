@@ -2,7 +2,7 @@ import { User } from "../../domain/entities/User";
 import { IUserRepository } from "../interface/IUserRepository";
 import bcrypt from "bcrypt";
 import JwtService from "../../infrastructure/services/JwtService";
-import passport from "passport";
+import { GoogleAuthService } from "../../infrastructure/services/googleAuthService";
 
 interface CreateUserDTO {
     name: string;
@@ -22,8 +22,8 @@ interface UserResponse {
 export class UserUseCase {
     constructor(private userRepository: IUserRepository) {}
     async generateOtp(email: string): Promise<string> {
-        const otp = this.userRepository.generateOtp(email);
-        return otp
+        await this.userRepository.generateOtp(email);
+        return `otp generated for ${email}`;
     }
     async register(newUser: CreateUserDTO): Promise<{ user: UserResponse; token: string }> {
 
@@ -47,13 +47,14 @@ export class UserUseCase {
     
         const hashedPassword = await bcrypt.hash(newUser.password, 10);
     
-        const user = new User(
-          Date.now().toString(),
-          newUser.name,
-          newUser.username,
-          newUser.email,
-          hashedPassword
-        );
+        const user = new User({
+          id: Date.now().toString(),
+          name: newUser.name,
+          username: newUser.username,
+          email: newUser.email,
+          password: hashedPassword,
+        });
+        
     
         const createdUser = await this.userRepository.create(user);
         if (!createdUser.id) {
@@ -66,6 +67,41 @@ export class UserUseCase {
         return { user: userResponse, token};
 
       }
+      async googleAuthenticate(token: string) {
+        const googleUser = await GoogleAuthService.verifyGoogleToken(token);
+
+        console.log("user from google", googleUser);
+        
+        let user = await this.userRepository.findByEmail(googleUser.email);
+        if (!user) {
+          let username = googleUser.email.split('@')[0];
+          let profile_picture = googleUser.avatar;
+          while (!this.checkUsernameAvailability(username)) {
+            username += Math.floor(1000 + Math.random() * 9000).toString(); 
+          }
+          user = new User({
+            id: Date.now().toString(),
+            name: googleUser.name,
+            email: googleUser.email,
+            profile_picture,
+            username
+          });
+          const createdUser = await this.userRepository.create(user);
+          if (!createdUser.id) {
+            throw new Error("Failed to create user");
+          }
+        }
+        
+      
+        if (!user.id) {
+          throw new Error("User ID is null");
+        }
+        const jwtToken = JwtService.generateToken(user.id);
+        const userResponse: UserResponse = { name: user.name, email: user.email };
+      
+        return { user: userResponse, token:jwtToken };
+      }
+      
 
     async userLogin(email: string, password: string) : Promise<{ user: UserResponse; token: string; message:string }> {
         console.log("from use case email:",email,"password", password);
@@ -90,9 +126,6 @@ export class UserUseCase {
         } else {
             throw new Error("Invalid credentials");
         }
-    }
-    async authenticateGoogle(req: any, res: any, next: any) {
-        passport.authenticate("google", { scope: ["email", "profile"] })(req, res, next);
     }
     async checkUsernameAvailability(username: string): Promise<boolean>{
         const user = await this.userRepository.findByUsername(username);
