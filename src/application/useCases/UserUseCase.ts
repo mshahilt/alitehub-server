@@ -14,8 +14,9 @@ interface CreateUserDTO {
     otp: string;
 }
 interface UserResponse {
-    name: string;
-    email: string;
+  name: string;
+  email: string;
+  username: string; 
 }
 
 
@@ -25,7 +26,7 @@ export class UserUseCase {
         await this.userRepository.generateOtp(email);
         return `otp generated for ${email}`;
     }
-    async register(newUser: CreateUserDTO): Promise<{ user: UserResponse; token: string }> {
+    async register(newUser: CreateUserDTO): Promise<{ user: UserResponse; accessToken: string, refreshToken: string }> {
 
         if (newUser.password !== newUser.confirmPassword) {
           throw new Error("Passwords do not match");
@@ -61,10 +62,11 @@ export class UserUseCase {
           throw new Error("Failed to create user");
         }
     
-        const token = JwtService.generateToken(createdUser.id);
-        const userResponse: UserResponse = { name: createdUser.name, email: createdUser.email };
+        const token = JwtService.generateToken(createdUser.id, "user");
+        const refreshToken = JwtService.generateRefreshToken(createdUser.id, "user");
+        const userResponse: UserResponse = { name: createdUser.name, email: createdUser.email, username: createdUser.username };
 
-        return { user: userResponse, token};
+        return { user: userResponse, accessToken:token, refreshToken};
 
       }
       async googleAuthenticate(token: string) {
@@ -73,6 +75,7 @@ export class UserUseCase {
         console.log("user from google", googleUser);
         
         let user = await this.userRepository.findByEmail(googleUser.email);
+        const role = "user";
         if (!user) {
           let username = googleUser.email.split('@')[0];
           let profile_picture = googleUser.avatar;
@@ -96,16 +99,18 @@ export class UserUseCase {
         if (!user.id) {
           throw new Error("User ID is null");
         }
-        const jwtToken = JwtService.generateToken(user.id);
-        const userResponse: UserResponse = { name: user.name, email: user.email };
+        const jwtToken = JwtService.generateToken(user.id, role);
+        const refreshToken = JwtService.generateRefreshToken(user.id, role);
+        const userResponse: UserResponse = { name: user.name, email: user.email, username: user.username };
       
-        return { user: userResponse, token:jwtToken };
+        return { user: userResponse, accessToken:jwtToken, refreshToken };
       }
       
 
-    async userLogin(email: string, password: string) : Promise<{ user: UserResponse; token: string; message:string }> {
+    async userLogin(email: string, password: string) : Promise<{ user: UserResponse; accessToken: string;refreshToken:string; message:string }> {
         console.log("from use case email:",email,"password", password);
         const user = await this.userRepository.findByEmail(email);
+        const role = 'user';
         console.log("user from db", user);
         if (!user) {
             throw new Error("User not found");
@@ -119,10 +124,11 @@ export class UserUseCase {
             if (!user.id) {
                 throw new Error("User ID is null");
             }
-            const token = JwtService.generateToken(user.id);
-            const userResponse:UserResponse = {name: user.name, email: user.email} 
+            const accessToken = JwtService.generateToken(user.id, role);
+            const refreshToken = JwtService.generateRefreshToken(user.id, role);
+            const userResponse:UserResponse = {name: user.name, email: user.email, username: user.username} 
             console.log("userResponse", userResponse);
-            return {user:userResponse, token, message: `${user.name}'s account verified`};
+            return {user:userResponse, accessToken, refreshToken, message: `${user.name}'s account verified`};
         } else {
             throw new Error("Invalid credentials");
         }
@@ -131,4 +137,35 @@ export class UserUseCase {
         const user = await this.userRepository.findByUsername(username);
         return user;
     }
+    
+    async fetchProfile(token: string, username: string): Promise<{ user: UserResponse; ownUserAcc: boolean }> {
+  try {
+    const verifiedDetails = await JwtService.verifyToken(token);
+    const authenticatedUser = await this.userRepository.findById(verifiedDetails.userId);
+    
+    if (!authenticatedUser) {
+      throw new Error("User not found");
+    }
+
+    if (authenticatedUser.username === username) {
+      return {
+        user: authenticatedUser,
+        ownUserAcc: true,
+      };
+    }
+
+    const requestedUser = await this.userRepository.findUserByUsername(username);
+    if (!requestedUser) {
+      throw new Error("User not found");
+    }
+
+    return {
+      user: requestedUser,
+      ownUserAcc: false,
+    };
+  } catch (error) {
+    throw new Error("Invalid or expired token");
+  }
+}
+   
 }

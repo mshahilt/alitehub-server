@@ -10,23 +10,12 @@ const createUserUseCase = new UserUseCase(userRepository);
 const userController = new UserController(createUserUseCase);
 
 
-router.post('/register', async (req: Request, res: Response) => {
-    await userController.createUser(req, res);
-})
-router.post('/login', async (req: Request, res: Response) => {
-    await userController.loginUser(req, res);
-})
-router.get('/checkUsernameAvailability', async (req: Request, res: Response) => {
-    await userController.checkUsernameAvailability(req, res);
-})
-router.post('/generateOtp', async (req: Request, res: Response) => {
-    await userController.generateOtp(req, res);
-})
-router.post('/google-login', async(req: Request, res: Response) => {
-    await userController.googleAuth(req, res);
+
+router.get('/:username', async (req: Request, res: Response) => {
+    await userController.fetchProfile(req, res)
 })
 
 
 
-  
+export { userController }
 export default router;

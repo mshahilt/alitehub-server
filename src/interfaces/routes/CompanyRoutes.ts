@@ -9,21 +9,7 @@ const userRepository = new CompanyRepositoryImpl();
 const createdCompanyUseCase = new CompanyUseCase(userRepository);
 const companyController = new CompanyController(createdCompanyUseCase);
 
-router.post('/register', async(req: Request, res: Response) => {
-    await companyController.createCompany(req, res);
-})
-
-router.post('/login', async(req: Request, res: Response) => {
-    await companyController.loginCompany(req, res);
-})
-
-router.post('/google-login', async (req: Request, res: Response) => {
-    await companyController.googleAuth(req, res);
-})
-
-router.post('/generateOtp', async(req: Request, res: Response) => {
-    await companyController.generateOtp(req, res);
-})
 
 
+export {companyController};
 export default router;

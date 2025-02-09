@@ -56,9 +56,9 @@ export class UserRepositoryImpl implements IUserRepository {
         }
     }
     async findById(userId: string): Promise<User | null> {
-        const user = await UserModel.findById(userId);
-        return user ? new User({id:user.id, name:user.name, username:user.username, email:user.email, password:user.password}) : null;
-    }
+        const user = await UserModel.findById(userId).select("-password");
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email }) : null;
+    }    
     
     async create(user:User): Promise<User> {
         const createdUser = await UserModel.create({
@@ -71,7 +71,10 @@ export class UserRepositoryImpl implements IUserRepository {
         return new User({id:createdUser.id, name:createdUser.name, username:createdUser.username, email:createdUser.email, password:createdUser.password});
     }
 
-
+    async findUserByUsername(username: string): Promise<User | null> {
+        const user = await UserModel.findOne({username});
+        return user ? new User({id: user.id, name: user.name, username: user.username, email: user.email, password: user.password}) : null;
+    }
 
     async findByEmail(email: string): Promise<User | null> {
         console.log(`Finding user by email: ${email}`);

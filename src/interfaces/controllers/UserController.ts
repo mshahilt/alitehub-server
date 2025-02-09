@@ -8,7 +8,7 @@ export class UserController {
         try {
             const {email} = req.body;
             const data = await this.userCase.generateOtp(email);
-            return res.status(201).json({message:"User created successfully",data})
+            return res.status(200).json({ message: "OTP sent successfully", data });
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(400).json({message: error.message});
@@ -19,8 +19,14 @@ export class UserController {
     async createUser(req: Request, res: Response): Promise<Response> {
         try {
             const {name, email, password, username, confirmPassword,termsAccepted, otp } = req.body;
-            const user = await this.userCase.register({name:name, username:username, email:email, password:password, confirmPassword: confirmPassword, termsAccepted:termsAccepted, otp:otp});
-            return res.status(201).json({message:"User Created Successfully", user});
+            const response = await this.userCase.register({name:name, username:username, email:email, password:password, confirmPassword: confirmPassword, termsAccepted:termsAccepted, otp:otp});
+            res.cookie("refreshToken", response.refreshToken, {
+                httpOnly: true,
+                sameSite: "lax",
+                secure:false,
+                maxAge:30*24*60*60*1000
+            })
+            return res.status(201).json({message:"User Created Successfully", response});
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(400).json({message: error.message});
@@ -34,9 +40,15 @@ export class UserController {
         try{
             const {email, password} = req.body;
             console.log("email:",email,"password", password);
-            const user = await this.userCase.userLogin(email, password);
-            console.log("user from login ", user)
-            return res.status(201).json({message:"User Verfied Successfully", user});
+            const response = await this.userCase.userLogin(email, password);
+            res.cookie("refreshToken", response.refreshToken, {
+                httpOnly: true,
+                sameSite: "lax",
+                secure:false,
+                maxAge:30*24*60*60*1000
+            })
+            console.log("user from login ", response)
+            return res.status(200).json({ message: "User Verified Successfully", response });
 
         }catch (error) {
             if (error instanceof Error) {
@@ -52,8 +64,14 @@ export class UserController {
             console.log(token);
             if (!token) return res.status(400).json({ message: "Token is required" });
 
-            const result = await this.userCase.googleAuthenticate(token);
-            return res.json({ user: result.user, token: result.token });
+            const response = await this.userCase.googleAuthenticate(token);
+            res.cookie("refreshToken", response.refreshToken, {
+                httpOnly: true,
+                sameSite: "lax",
+                secure:false,
+                maxAge:30*24*60*60*1000
+            })
+            return res.json({ user: response.user, accessToken: response.accessToken, refreshToke: response.refreshToken });
 
         } catch (error) {
             if (error instanceof Error) {
@@ -73,6 +91,62 @@ export class UserController {
             console.log(isAvailable)
             return res.status(200).json({message: "Username is available", data: isAvailable});
         }catch(error){
+            if (error instanceof Error) {
+                return res.status(400).json({message: error.message});
+            }
+            console.log("error on checkUsernameAvailability", error)
+            return res.status(400).json({message: "An unknown error occurred"});
+        }
+    }
+    async fetchProfile(req: Request, res: Response): Promise<Response> {
+        try {
+            const token = req.headers.authorization;
+            const { username } = req.params; 
+    
+            console.log("Token inside profile controller:", token, "Username:", username);
+    
+            if (!token) {
+                return res.status(401).json({ message: "Authorization token is missing" });
+            }
+    
+            const data = await this.userCase.fetchProfile(token, username);
+    
+            if (!data) {
+                return res.status(401).json({ message: "Invalid or expired token" });
+            }
+    
+            return res.status(200).json({
+                message: "Profile fetched successfully",
+                user: data.user,
+                ownUserAcc: data.ownUserAcc,
+            });
+    
+        } catch (error) {
+            return res.status(400).json({ 
+                message: error instanceof Error ? error.message : "An unknown error occurred" 
+            });
+        }
+    }
+    
+    
+    async refreshToken(req: Request, res: Response): Promise<Response> {
+        try {
+            const refreshToken = req.cookies.refreshToken;
+            if (!refreshToken) {
+                return res.status(403).json({ message: "Refresh token missing" });
+            }
+
+            const verifiedDetails = await JwtService.verifyToken(refreshToken);
+            if (!verifiedDetails) {
+                return res.status(403).json({ message: "Invalid or expired refresh token" });
+            }
+
+            const { userId, role } = verifiedDetails;
+            const newAccessToken = JwtService.generateToken(userId, role);
+            
+            return res.json({ accessToken: newAccessToken });
+
+        } catch (error) {
             if (error instanceof Error) {
                 return res.status(400).json({message: error.message});
             }

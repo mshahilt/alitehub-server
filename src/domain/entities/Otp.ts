@@ -29,9 +29,9 @@ export class Otp {
     }
 
     static generate(email: string): Otp {
-        const code = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digit OTP
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
         const createdAt = new Date();
-        const expiresAt = new Date(createdAt.getTime() + 5 * 60 * 1000); // 5 minutes expiration
+        const expiresAt = new Date(createdAt.getTime() + 5 * 60 * 1000);
         return new Otp(code, email, createdAt, expiresAt);
     }
 }

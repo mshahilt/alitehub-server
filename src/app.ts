@@ -1,20 +1,26 @@
 import express from "express";
 import userRoutes from "./interfaces/routes/UserRoutes";
-import authRoutes from './interfaces/routes/testRoutes';
+import authRoutes from './interfaces/routes/AuthRoutes';
 import comapnyRoutes from "./interfaces/routes/CompanyRoutes";
 import dotenv from "dotenv";
 import { connectDB } from "./infrastructure/config/database";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true, 
+}));
+
+app.use(cookieParser());
 
 // routes
-app.use("/", authRoutes);
-app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/", userRoutes);
 app.use("/company", comapnyRoutes);
 
 const startServer = async () => {

@@ -32,7 +32,7 @@ export class CompanyUseCase {
         }
           const isVerified = await bcrypt.compare(password, company.password);
           if(isVerified){
-                const token = JwtService.generateToken(company.id);
+                const token = JwtService.generateToken(company.id, "company");
                 const companyResponse:CompanyResponse = {name: company.name, email: company.email} 
                 return {company:companyResponse, token, message: `${company.name}'s account verified`};
         } else {
@@ -69,7 +69,7 @@ export class CompanyUseCase {
             throw new Error("Failed to create user");
         }
 
-        const token = JwtService.generateToken(createdCompany.id);
+        const token = JwtService.generateToken(createdCompany.id, "company");
         const response: CompanyResponse = {name: createdCompany.name, email: createdCompany.email};
 
         return {company: response, token};
@@ -82,7 +82,7 @@ export class CompanyUseCase {
             throw new Error("Company with credential not exist");
         }
 
-        const jwtToken = JwtService.generateToken(company.id);
+        const jwtToken = JwtService.generateToken(company.id, "company");
         const companyResponse: CompanyResponse = {name: company.name, email: company.email};
         
         return {company: companyResponse, token: jwtToken};
