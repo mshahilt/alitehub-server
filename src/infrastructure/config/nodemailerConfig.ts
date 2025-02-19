@@ -11,7 +11,5 @@ const transporter = nodemailer.createTransport({
     }
 })
 
-console.log("yeah, i am working inside nodemailer config",process.env.SMTP_EMAIL)
-console.log("yeah, i am working inside nodemailer config",process.env.SMTP_PASSWORD)
 
 export default transporter;

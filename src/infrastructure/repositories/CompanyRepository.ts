@@ -2,9 +2,13 @@ import { User } from "../../domain/entities/User";
 import { ICompanyRepository } from "../../application/interface/ICompanyRepository";
 import CompanyModel from "../database/models/CompanyModel";
 import OtpModel from "../database/models/OtpModel";
+import JobModel from "../database/models/JobModel";
 import { Otp } from "../../domain/entities/Otp";
 import { EmailService } from "../services/EmailService";
 import { Company } from "../../domain/entities/Company";
+import { Job } from "../../domain/entities/Job";
+import { Quiz } from "../../domain/entities/Quiz";
+import QuizModel from "../database/models/QuizModel";
 
 export class CompanyRepositoryImpl implements ICompanyRepository {
     async generateOtp(email: string): Promise<string> {
@@ -42,6 +46,9 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
         const createdCompany = await CompanyModel.create({
             name: company.name,
             email: company.email,
+            industry: company.industry,
+            companyIdentifier: company.companyIdentifier,
+            companyType:company.companyType,
             password: company.password,
             profile_picture: company.profile_picture
         })
@@ -68,4 +75,70 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
             return false;
         }
     }
+    async findCompanyById(companyId: string): Promise<Company | null> {
+        try {
+            const company = await CompanyModel.findById(companyId).select("-password");
+            return company ? new Company({name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations}) : null;
+        } catch (error) {
+            console.error("Error finding company by ID:", error);
+            return null;
+        }
+    }
+    async findCompanyByCompanyIdentifier(companyIdentifier: string): Promise<Company | null> {
+        try {
+            const company = await CompanyModel.findOne({companyIdentifier});
+            return company ? new Company({ id: company.id, name: company.name, companyIdentifier: company.companyIdentifier, email: company.email,
+                companyType: company.companyType, industry: company.industry, profile_picture: company.profile_picture 
+             }) : null;
+        } catch (error) {
+            console.error("Error finding company by ID:", error);
+            return null;
+        }
+    }
+    async createJobs(jobDetails: Job, companyId: string): Promise<Job | null> {
+        try {
+            console.log('sdfsd',companyId)
+            const job = await JobModel.create({
+                jobTitle: jobDetails.jobTitle,
+                companyName: jobDetails.company,
+                companyId: companyId,
+                workplaceType: jobDetails.workplaceType,
+                jobType: jobDetails.jobType,
+                jobLocation: jobDetails.jobLocation,
+                description: jobDetails.description,
+                yearsExperienceExpecting: jobDetails.yearsExperienceExpecting,
+                responsibilities: jobDetails.responsibilities,
+                qualifications: jobDetails.qualifications,
+                skills: jobDetails.skills
+            });
+    
+            return job ? new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType }) : null;
+        } catch (error) {
+            console.error('Error creating job:', error);
+            return null;
+        }
+    }
+
+    async createQuiz(jobId: string, quizQuestions: Quiz): Promise<Quiz | null> {
+        try {
+            const quiz = await QuizModel.create({
+                questions: quizQuestions,
+                jobId: jobId,
+            })
+            return quiz ? new Quiz({id: quiz.id, jobId: quiz.jobId}) : null
+        } catch (error) {
+            console.error('Error creating quiz:', error);
+            return null;
+        }
+    }
+    async findJobsOfCompanyById(companyId: string): Promise<Job[] | null> {
+        try {
+            const jobs = await JobModel.find({companyId});
+            return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.createdAt })) : null
+        } catch (error) {
+            console.error('Error fetching job:', error);
+            return null;
+        }
+    }
+    
 }

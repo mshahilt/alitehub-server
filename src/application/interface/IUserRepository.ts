@@ -1,3 +1,4 @@
+import { Job } from "../../domain/entities/Job";
 import { User } from "../../domain/entities/User";
 
 export interface IUserRepository{
@@ -8,4 +9,8 @@ export interface IUserRepository{
     findByUsername(username: string): Promise<boolean>;
     findUserByUsername(username: string): Promise<User | null>;
     findById(id: string): Promise<User | null>;
+    updatePassword(email: string, password: string): void;
+    findAll(): Promise<User[]>
+    updateUserByEmail(user: User): Promise<User>;
+    findAllJobs(): Promise<Job[] | null>;
 }

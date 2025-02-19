@@ -3,8 +3,10 @@ import { IUserRepository } from "../interface/IUserRepository";
 import bcrypt from "bcrypt";
 import JwtService from "../../infrastructure/services/JwtService";
 import { GoogleAuthService } from "../../infrastructure/services/googleAuthService";
+import { Job } from "../../domain/entities/Job";
+import { error } from "console";
 
-interface CreateUserDTO {
+export interface CreateUserDTO {
     name: string;
     username: string;
     email: string;
@@ -13,7 +15,7 @@ interface CreateUserDTO {
     termsAccepted: boolean;
     otp: string;
 }
-interface UserResponse {
+export interface UserResponse {
   name: string;
   email: string;
   username: string; 
@@ -139,33 +141,163 @@ export class UserUseCase {
     }
     
     async fetchProfile(token: string, username: string): Promise<{ user: UserResponse; ownUserAcc: boolean }> {
-  try {
-    const verifiedDetails = await JwtService.verifyToken(token);
-    const authenticatedUser = await this.userRepository.findById(verifiedDetails.userId);
-    
-    if (!authenticatedUser) {
-      throw new Error("User not found");
-    }
-
-    if (authenticatedUser.username === username) {
-      return {
-        user: authenticatedUser,
-        ownUserAcc: true,
-      };
-    }
-
-    const requestedUser = await this.userRepository.findUserByUsername(username);
-    if (!requestedUser) {
-      throw new Error("User not found");
-    }
-
-    return {
-      user: requestedUser,
-      ownUserAcc: false,
-    };
-  } catch (error) {
-    throw new Error("Invalid or expired token");
+      try {
+          const verifiedDetails = await JwtService.verifyToken(token);
+          if (!verifiedDetails?.userId) {
+              const error: any = new Error("Invalid token");
+              error.statusCode = 401;
+              throw error;
+          }
+  
+          const authenticatedUser = await this.userRepository.findById(verifiedDetails.userId);
+          if (!authenticatedUser) {
+              const error: any = new Error("User not found");
+              error.statusCode = 401;
+              throw error;
+          }
+  
+          if (authenticatedUser.username === username) {
+              return {
+                  user: authenticatedUser,
+                  ownUserAcc: true,
+              };
+          }
+  
+          const requestedUser = await this.userRepository.findUserByUsername(username);
+          if (!requestedUser) {
+              const error: any = new Error("User not found");
+              error.statusCode = 404;
+              throw error;
+          }
+  
+          return {
+              user: requestedUser,
+              ownUserAcc: false,
+          };
+  
+      } catch (error: any) {
+          console.error("Error in fetchProfile:", error);
+  
+          if (!error.statusCode) {
+              error.statusCode = 401; 
+          }
+  
+          throw error;
+      }
   }
+  
+  async fetchUserUsingToken(token: string): Promise<{ user: UserResponse }> {
+    try {
+        const verifiedDetails = await JwtService.verifyToken(token);
+        if (!verifiedDetails?.userId) {
+            const error: any = new Error("Invalid token");
+            error.statusCode = 401;
+            throw error;
+        }
+
+        const authenticatedUser = await this.userRepository.findById(verifiedDetails.userId);
+
+        if (!authenticatedUser) {
+            const error: any = new Error("User not found");
+            error.statusCode = 400;
+            throw error;
+        }
+
+        return { user: authenticatedUser };
+    } catch (error: any) {
+        console.error("Error in fetchUserUsingToken:", error);
+
+        if (!error.statusCode) {
+            error.statusCode = 401;
+        }
+
+        throw error;
+    }
 }
+  async forgotPassword(email: string): Promise<{ user: UserResponse }> {
+    try {
+      const fetchedUser = await this.userRepository.findByEmail(email);
+      if (!fetchedUser) {
+        throw new Error("User not found");
+      }
+      await this.userRepository.generateOtp(email);
+      const userResponse: UserResponse = { name: fetchedUser.name, email: fetchedUser.email, username: fetchedUser.username };
+      console.log("from forgot password", userResponse);
+      return { user: userResponse };
+    } catch (error: any) {
+      console.error("Error in forgotPassword:", error);
+      throw error;
+    }
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string, confirmPassword: string): Promise<{ message: string }> {
+    try {
+      if (newPassword !== confirmPassword) {
+        throw new Error("Passwords do not match");
+      }
+
+      const isOtpValid = await this.userRepository.verifyOtp(email, otp);
+      if (!isOtpValid) {
+        throw new Error("OTP verification failed");
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await this.userRepository.updatePassword(email, hashedPassword);
+
+      return { message: "Password reset successfully" };
+    } catch (error: any) {
+      console.error("Error in resetPassword:", error);
+      throw error;
+    }
+  }
+
+  async fetchAllUsers(): Promise<User[]> {
+    try {
+      const users = await this.userRepository.findAll();
+      return users;
+    } catch (error: any) {
+      console.error("Error in fetchAllUsers:", error);
+      throw error;
+    }
+  }
+
+  async updateProfile(user:User): Promise<UserResponse> {
+    try {
+      const updatedUser = this.userRepository.updateUserByEmail(user);
+      if (!updatedUser) {
+        const error: any = new Error("User not found");
+        error.statusCode = 400;
+        throw error;
+      }
+      return updatedUser
+
+    } catch (error) {
+      console.error("Error in fetchAllUsers:", error);
+      throw error;
+    }
+  }
+
+  async fetchJobs(token: string): Promise<Job[] | null> {
+    try {
+      const verifiedDetails = await JwtService.verifyToken(token);
+      
+      const verifiedUser = await this.userRepository.findById(verifiedDetails.userId);
+      console.log('fetch job worked')
+      if(!verifiedUser) {
+         throw error("User is not found");
+      }
+
+      const jobs = await this.userRepository.findAllJobs();
+      if(jobs?.length === 0) {
+        return null
+      }else {
+          return jobs;
+      }
+    } catch (error) {
+      console.error("Error in fetching jobs for users:", error);
+      throw error;
+    }
+  }
+
    
 }

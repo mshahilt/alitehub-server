@@ -2,6 +2,7 @@ import express from "express";
 import userRoutes from "./interfaces/routes/UserRoutes";
 import authRoutes from './interfaces/routes/AuthRoutes';
 import comapnyRoutes from "./interfaces/routes/CompanyRoutes";
+import adminRoutes from "./interfaces/routes/AdminRoutes";
 import dotenv from "dotenv";
 import { connectDB } from "./infrastructure/config/database";
 import cors from "cors";
@@ -22,6 +23,7 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/", userRoutes);
 app.use("/company", comapnyRoutes);
+app.use("/admin", adminRoutes);
 
 const startServer = async () => {
     await connectDB();

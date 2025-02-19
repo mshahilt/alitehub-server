@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { UserUseCase } from "../../application/useCases/UserUseCase";
 import JwtService from "../../infrastructure/services/JwtService";
+import { userController } from "../routes/UserRoutes";
 
 export class UserController {
     constructor(private userCase: UserUseCase) {}
@@ -71,7 +72,7 @@ export class UserController {
                 secure:false,
                 maxAge:30*24*60*60*1000
             })
-            return res.json({ user: response.user, accessToken: response.accessToken, refreshToke: response.refreshToken });
+            return res.status(200).json({message:"Google authanticated successfully", response});
 
         } catch (error) {
             if (error instanceof Error) {
@@ -101,7 +102,7 @@ export class UserController {
     async fetchProfile(req: Request, res: Response): Promise<Response> {
         try {
             const token = req.headers.authorization;
-            const { username } = req.params; 
+            const { username } = req.params;
     
             console.log("Token inside profile controller:", token, "Username:", username);
     
@@ -111,23 +112,46 @@ export class UserController {
     
             const data = await this.userCase.fetchProfile(token, username);
     
-            if (!data) {
-                return res.status(401).json({ message: "Invalid or expired token" });
-            }
-    
             return res.status(200).json({
                 message: "Profile fetched successfully",
                 user: data.user,
-                ownUserAcc: data.ownUserAcc,
+                ownAccount: data.ownUserAcc,
             });
     
-        } catch (error) {
-            return res.status(400).json({ 
-                message: error instanceof Error ? error.message : "An unknown error occurred" 
+        } catch (error: any) {
+            console.error("Error in fetchProfile:", error);
+            return res.status(error.statusCode || 500).json({
+                message: error.message || "An unknown error occurred"
             });
         }
     }
     
+
+    async fetchUserUsingToken(req: Request, res: Response): Promise<Response> {
+        try {
+            console.log("i am called");
+            const token = req.headers.authorization;
+            console.log("Authorization token:", token);
+    
+            if (!token) {
+                console.log("Authorization token is missing");
+                return res.status(401).json({ message: "Authorization token is missing" });
+            }
+    
+            const data = await this.userCase.fetchUserUsingToken(token);
+            console.log("Data in fetchUserUsingToken:", data);
+            return res.status(200).json({
+                message: "User data fetched successfully",
+                user: data.user,
+            });
+    
+        } catch (error: any) {
+            console.log("Error in fetchUserUsingToken:", error);
+            return res.status(error.statusCode || 500).json({ 
+                message: error.message || "An unknown error occurred" 
+            });
+        }
+    }
     
     async refreshToken(req: Request, res: Response): Promise<Response> {
         try {
@@ -154,4 +178,67 @@ export class UserController {
             return res.status(400).json({message: "An unknown error occurred"});
         }
     }
+    async forgotPassword(req: Request, res: Response): Promise<Response> {
+        try{
+            const {email} = req.body;
+            const response = await this.userCase.forgotPassword(email);
+            console.log("response at forgot password", response)
+            return res.status(200).json({message:"Email sent successfully", response});
+        }catch(error) {
+            if (error instanceof Error) {
+                return res.status(400).json({message: error.message, success:true});
+            }
+            return res.status(400).json({message: "An unknown error occurred"});
+        }
+    }
+    async resetPassword(req: Request, res: Response): Promise<Response> {
+        try {
+            const { email, otp, newPassword, confirmPassword } = req.body;
+            const response = await this.userCase.resetPassword(email, otp, newPassword, confirmPassword);
+            return res.status(200).json({ message: response.message, success:true });
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(400).json({ message: "An unknown error occurred" });
+        }
+    }
+    async getAllUsers(req: Request, res: Response): Promise<Response> {
+        try{
+            const data = await this.userCase.fetchAllUsers();
+            return res.status(200).json({ message: "data fethed successfully", success:true, data });
+        } catch(error) {
+            if (error instanceof Error) {
+                return res.status(400).json({ message: error.message });
+            }
+            return res.status(400).json({ message: "An unknown error occurred" });
+        }
+    }
+    async updateProfile(req: Request, res: Response): Promise<Response> {
+        try {
+            const user = req.body;
+            const response = await this.userCase.updateProfile(user);
+            return res.status(200).json({ message: "Success", user:response});
+        } catch (error) { 
+            return res.status(400).json({ message: "An unknown error occurred" });
+        }
+    }
+
+    async fetchJobs(req:Request, res: Response): Promise<Response> {
+        try {
+            const token: string = req.headers.authorization as string;
+            const response = await this.userCase.fetchJobs(token);
+            return res.status(200).json({
+                message: "Question generated successfully",
+                jobs: response,
+            });
+        } catch (error: any) {
+            console.log("Error in getching company jobs: ", error);
+    
+            return res.status(error.status || 500).json({
+                message: error.message || "An unknown error occurred",
+            });
+        }
+    }
+    
 }

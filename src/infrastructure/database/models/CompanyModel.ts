@@ -4,6 +4,9 @@ interface ICompany extends Document {
     name: string;
     email: string;
     password?: string;
+    industry: string;
+    companyType: string;
+    companyIdentifier: string;
     contact?: {
         phone?: string | null;
     };
@@ -15,6 +18,9 @@ const CompanySchema: Schema = new Schema<ICompany>({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
+    industry: {type: String, required: true},
+    companyType:{type: String, required: true},
+    companyIdentifier: {type: String, required: true},
     contact: {
         phone: { type: String, default: null }
     },

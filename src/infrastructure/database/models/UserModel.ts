@@ -10,6 +10,7 @@ export interface IUser extends Document {
         phone?: string | null;
     };
     profile_picture?: string | null;
+    isBlocked: boolean;
     education?: {
         degree?: string | null;
         end_date?: string | null;
@@ -43,6 +44,7 @@ const UserSchema: Schema = new Schema(
             phone: { type: String, default: null },
         },
         profile_picture: { type: String, default: null },
+        isBlocked: {type: Boolean, default: false},
         education: [
             {
                 degree: { type: String, default: null },
