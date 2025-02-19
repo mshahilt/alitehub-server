@@ -2,6 +2,7 @@ export class Job {
     public readonly id!: string;
     public jobTitle!: string;
     public company!: string;
+    public company_profile?: string;
     public workplaceType!: 'remote' | 'onsite' | 'hybrid';
     public jobType!: 'full-time' | 'part-time' | 'contract' | 'internship';
     public jobLocation!: string;

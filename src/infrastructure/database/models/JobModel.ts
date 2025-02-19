@@ -3,8 +3,8 @@ import mongoose, { Schema, model, Document } from 'mongoose';
 interface IJob extends Document {
     jobTitle: string;
     companyName: string;
-    companyId: mongoose.Types.ObjectId;
-workplaceType: 'remote' | 'onsite' | 'hybrid';
+    companyId: {companyId:mongoose.Types.ObjectId, profile_picture: string};
+    workplaceType: 'remote' | 'onsite' | 'hybrid';
     jobType: 'full-time' | 'part-time' | 'contract' | 'internship';
     jobLocation: string;
     description: string;

@@ -140,5 +140,28 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
             return null;
         }
     }
+    async updateCompanyById(companyId: string, companyData: Partial<Company>): Promise<Company | null> {
+        try {
+            let company = await CompanyModel.findById(companyId);
+            if (!company) {
+                throw new Error("Company not found");
+            }
+    
+            const dataKeysToBeUpdated = Object.keys(companyData);
+    
+            for (let key of dataKeysToBeUpdated) {
+                (company as any)[key] = companyData[key as keyof Company];
+            }
+    
+            await company.save(); 
+            return new Company({name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations});
+        } catch (error) {
+            console.error("Error updating company:", error);
+            throw error;
+        }
+    }
+    
+    
+    
     
 }

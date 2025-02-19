@@ -155,8 +155,11 @@ export class UserRepositoryImpl implements IUserRepository {
         });
     }
     async findAllJobs(): Promise<Job[] | null> {
-        const jobs = await JobModel.find();
-        return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.createdAt })) : null
+        const jobs = await JobModel.find().populate({
+            path: "companyId",
+            select: "profile_picture",
+        });
+        return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.createdAt, company_profile: job.companyId.profile_picture })) : null
     }
     
 }

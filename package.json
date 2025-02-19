@@ -19,8 +19,10 @@
   "homepage": "https://github.com/mshahilt/alitehub-server#readme",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.750.0",
     "@google/generative-ai": "^0.21.0",
     "bcrypt": "^5.1.1",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -28,6 +30,7 @@
     "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.0",
     "react-toastify": "^11.0.3"
   },
@@ -37,6 +40,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.8",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.12.0",
     "@types/nodemailer": "^6.4.17",
     "ts-node-dev": "^2.0.0",

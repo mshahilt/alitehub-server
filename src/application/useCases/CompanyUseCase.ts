@@ -6,6 +6,7 @@ import { GoogleAuthService } from "../../infrastructure/services/googleAuthServi
 import { GenerateQuizAiService } from "../../infrastructure/services/GeminiAiModelService";
 import { Job } from "../../domain/entities/Job";
 import { Quiz } from "../../domain/entities/Quiz";
+import { cloudinaryConfig } from "../../infrastructure/config/cloudinaryConfig";
 
 export interface CompanyDTO {
     name: string;
@@ -299,6 +300,43 @@ export class CompanyUseCase {
             throw error;
         }
     }
+    async uploadCompanyProfileImage(profileFile: any, token: string) {
+        try {
+            const verifiedDetails = await JwtService.verifyToken(token);
+            console.log("Verified company details:", verifiedDetails);
+
+            console.log("profile file", profileFile)
+            if (!verifiedDetails?.userId) {
+                const error: any = new Error("Invalid or expired token");
+                error.statusCode = 400; 
+                throw error;
+            }
+            const cloudinary = cloudinaryConfig();
+            const result = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    { folder: "company_profiles",
+                        quality: "auto:low", 
+                        fetch_format: "auto",
+                     },
+                    
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
     
+                uploadStream.end(profileFile.buffer);
+            });
+            const { secure_url } = result as { secure_url: string };
+            const companyData = new Company({profile_picture:secure_url});
+            console.log("companyDatasdflk", companyData)
+            await this.companyRepository.updateCompanyById(verifiedDetails.userId, companyData)
+
+        return result;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
       
 }

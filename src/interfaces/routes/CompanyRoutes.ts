@@ -3,6 +3,7 @@ import { CompanyController } from "../controllers/CompanyController";
 import { CompanyUseCase } from "../../application/useCases/CompanyUseCase";
 import { Request, Response } from "express";
 import { CompanyRepositoryImpl } from "../../infrastructure/repositories/CompanyRepository";
+import { upload } from "../../infrastructure/config/multerConfig";
 
 const router = express.Router();
 const companyRepository = new CompanyRepositoryImpl();
@@ -21,6 +22,10 @@ router.post("/job/add", async(req: Request, res: Response) => {
 router.get("/job/get", async(req: Request, res: Response) => {
     await companyController.getCompanyJobs(req, res);
 })
+router.post('/uploadProfileImage', upload.single("profileImage"), async (req: Request, res: Response) => {
+    await companyController.uploadCompanyProfileImage(req, res);
+});
+
 router.get('/:companyIdentifier', async (req: Request, res: Response) => {
     await companyController.fetchProfile(req, res)
 })

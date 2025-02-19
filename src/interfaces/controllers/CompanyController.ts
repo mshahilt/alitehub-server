@@ -193,4 +193,33 @@ export class CompanyController{
             });
         }
     }
+
+    async uploadCompanyProfileImage(req: Request, res: Response): Promise<Response> {
+        try {
+            const { file } = req;
+            const token = req.headers.authorization;
+
+            console.log(file);
+            if (!file) {
+                return res.status(400).json({ message: "No file uploaded" });
+            }
+            if (!token) {
+                console.log("Authorization token is missing");
+                return res.status(400).json({ message: "Authorization token is missing" });
+            }
+    
+            const uploadedImage = await this.companyUseCase.uploadCompanyProfileImage(file, token);
+    
+            return res.status(200).json({
+                message: "Image uploaded successfully",
+                data: uploadedImage,
+            });
+        } catch (error: any) {
+            console.error("Error in uploading profile image:", error);
+            return res.status(error.statusCode || 500).json({
+                message: error.message || "An unknown error occurred",
+            });
+        }
+    }
+    
 }
