@@ -126,53 +126,7 @@ export class CompanyController{
             });
         }
     }
-
-    async generateQuizQuestions(req: Request, res: Response):Promise<Response> {
-        try {
-            console.log("generate quiz called");
-            const token = req.headers.authorization;
-            if (!token) {
-                console.log("Authorization token is missing");
-                return res.status(400).json({ message: "Authorization token is missing" });
-            }
-            const {responsibilities, description, experienceExpecting} = req.body;
-            console.log(req.body)
-            const response =  await this.companyUseCase.generateQuizQuestions(description, responsibilities, experienceExpecting, token);
-            return res.status(200).json({
-                message: "Question generated successfully",
-                questions: response,
-            });
-        } catch (error: any) {
-            console.log("Error in generating quiz questions:", error);
     
-            return res.status(error.status || 500).json({
-                message: error.message || "An unknown error occurred",
-            });
-        }
-    }
-    async addJobPost(req: Request, res: Response): Promise<Response> {
-        try {
-            console.log("generate quiz called");
-            const token = req.headers.authorization;
-            if (!token) {
-                console.log("Authorization token is missing");
-                return res.status(400).json({ message: "Authorization token is missing" });
-            }
-            const {jobDetails, screeningQuiz} = req.body;
-            console.log(req.body)
-            const response =  await this.companyUseCase.addJobPost(jobDetails, screeningQuiz, token);
-            return res.status(200).json({
-                message: "Question generated successfully",
-                questions: response,
-            });
-        }catch (error: any) {
-            console.log("Error in posting new job: ", error);
-    
-            return res.status(error.status || 500).json({
-                message: error.message || "An unknown error occurred",
-            });
-        }
-    }
     async getCompanyJobs(req: Request, res: Response): Promise<Response> {
         try {
             const token = req.headers.authorization;
@@ -182,7 +136,7 @@ export class CompanyController{
             }
             const response =  await this.companyUseCase.getCompanyJobs(token);
             return res.status(200).json({
-                message: "Question generated successfully",
+                message: "Company Details fetched successfully",
                 jobs: response,
             });
 

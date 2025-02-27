@@ -12,3 +12,12 @@ export const cloudinaryConfig = () => {
 
     return cloudinary;
 };
+
+export const cloudinarySignature = (timestamp: number) => {
+    const cloudinary = cloudinaryConfig();
+    return cloudinary.utils.api_sign_request(
+        {timestamp},
+        process.env.CLOUDINARY_API_SECRET!
+    )
+
+}

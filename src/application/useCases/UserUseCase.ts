@@ -4,7 +4,9 @@ import bcrypt from "bcrypt";
 import JwtService from "../../infrastructure/services/JwtService";
 import { GoogleAuthService } from "../../infrastructure/services/googleAuthService";
 import { Job } from "../../domain/entities/Job";
+import { GenerateQuizAiService } from "../../infrastructure/services/GeminiAiModelService";
 import { error } from "console";
+import { cloudinaryConfig, cloudinarySignature } from "../../infrastructure/config/cloudinaryConfig";
 
 export interface CreateUserDTO {
     name: string;
@@ -261,7 +263,7 @@ export class UserUseCase {
     }
   }
 
-  async updateProfile(user:User): Promise<UserResponse> {
+  async updateProfile(user:User): Promise<UserResponse | null> {
     try {
       const updatedUser = this.userRepository.updateUserByEmail(user);
       if (!updatedUser) {
@@ -269,6 +271,7 @@ export class UserUseCase {
         error.statusCode = 400;
         throw error;
       }
+      console.log("updated user here")
       return updatedUser
 
     } catch (error) {
@@ -276,28 +279,37 @@ export class UserUseCase {
       throw error;
     }
   }
-
-  async fetchJobs(token: string): Promise<Job[] | null> {
+  async generateSignUploadUrl(token: string) {
     try {
-      const verifiedDetails = await JwtService.verifyToken(token);
-      
-      const verifiedUser = await this.userRepository.findById(verifiedDetails.userId);
-      console.log('fetch job worked')
-      if(!verifiedUser) {
-         throw error("User is not found");
-      }
+        const verifiedDetails = await JwtService.verifyToken(token);
+        if (!verifiedDetails?.userId) {
+            throw Object.assign(new Error("Invalid token"), { statusCode: 401 });
+        }
 
-      const jobs = await this.userRepository.findAllJobs();
-      if(jobs?.length === 0) {
-        return null
-      }else {
-          return jobs;
-      }
+        const cloudName = process.env.CLOUDINARY_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+
+        if (!cloudName || !apiKey) {
+            throw Object.assign(new Error("Cloudinary credentials are missing"), { statusCode: 500 });
+        }
+
+        const timestamp: number = Math.round(new Date().getTime() / 1000);
+        
+        const signature = cloudinarySignature(timestamp);
+
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
+
+        return {
+            signature,
+            cloud_name: cloudName,
+            api_key: apiKey,
+            timestamp,
+            upload_url: uploadUrl, 
+        };
     } catch (error) {
-      console.error("Error in fetching jobs for users:", error);
-      throw error;
+        console.error("Error generating signed upload URL:", error);
+        throw error;
     }
-  }
+    }
 
-   
 }

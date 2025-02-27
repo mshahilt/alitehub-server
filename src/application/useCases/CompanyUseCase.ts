@@ -215,63 +215,6 @@ export class CompanyUseCase {
           throw error;
       }
     }
-    async generateQuizQuestions(
-        jobDiscription: string, 
-        jobResponsibilty: string, 
-        yearOfExperience: string, 
-        token: string
-    ): Promise<string[]> { 
-        try {
-            const verifiedDetails = await JwtService.verifyToken(token);
-            console.log("Verified user details:", verifiedDetails);
-    
-            if (!verifiedDetails?.userId) {
-                const error: any = new Error("Invalid or expired token");
-                error.statusCode = 400; 
-                throw error;
-            }
-    
-            const responseText = await GenerateQuizAiService.generateQuestion(jobDiscription, jobResponsibilty, yearOfExperience);
-            
-            const quizQuestions = responseText.match(/Question \d+: (.+)/g)?.map(q => q.replace(/Question \d+: /, '').trim()) || [];
-    
-            console.log("Generated Quiz Questions:", quizQuestions);
-            return quizQuestions;
-        } catch (error: any) {
-            console.error("Error in generateQuizQuestions:", error);
-            throw error;
-        }
-    }
-
-    async addJobPost(jobDetails:Job, screeningQuiz:Quiz, token: string): Promise<boolean>{
-        try {
-            const verifiedDetails = await JwtService.verifyToken(token);
-            console.log("Verified user details:", verifiedDetails);
-    
-            if (!verifiedDetails?.userId) {
-                const error: any = new Error("Invalid or expired token");
-                error.statusCode = 400; 
-                throw error;
-            }
-            const companyId: string = verifiedDetails.userId;
-            const postedJob = await this.companyRepository.createJobs(jobDetails, companyId);
-            if(!postedJob) {
-                return false;
-            }
-            const createdQuiz = await this.companyRepository.createQuiz(postedJob.id, screeningQuiz);
-            if(createdQuiz) {
-                return false;
-            }
-            
-            return true;
-
-
-        } catch (error) {
-            console.error("Error in posting job and quiz:", error);
-            throw error;
-        }
-    }
-
     async getCompanyJobs(token: string): Promise<Job[] | null> {
         try {
             const verifiedDetails = await JwtService.verifyToken(token);
@@ -282,14 +225,16 @@ export class CompanyUseCase {
                 error.statusCode = 400; 
                 throw error;
             }
-
+  
             const company = await this.companyRepository.findCompanyById(verifiedDetails.userId);
             if(!company) {
                 const error: any = new Error("Can't find company");
                 error.statusCode = 400;
                 throw error;
             }
+            console.log("company ksfasdkjf", company);
             const jobs = await this.companyRepository.findJobsOfCompanyById(company.id);
+            console.log("jobs ksfasdkjf", jobs);
             if(jobs?.length === 0) {
                 return null
             }else {

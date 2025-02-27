@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { UserUseCase } from "../../application/useCases/UserUseCase";
 import JwtService from "../../infrastructure/services/JwtService";
-import { userController } from "../routes/UserRoutes";
+
 
 export class UserController {
     constructor(private userCase: UserUseCase) {}
@@ -223,16 +223,58 @@ export class UserController {
             return res.status(400).json({ message: "An unknown error occurred" });
         }
     }
+    async getSignedUploadUrl(req: Request, res: Response) {
+        try {
+            const token = req.headers.authorization;
+    
+            if (!token) {
+                return res.status(401).json({ message: "Authorization token is missing" });
+            }
+            const response = await this.userCase.generateSignUploadUrl(token);
+            return res.status(200).json({
+                message: "Cloudinary Signature Generated",
+                signedUrl: response,
+            });
 
-    async fetchJobs(req:Request, res: Response): Promise<Response> {
+        } catch (error: any) {
+            console.error("Error in generating signed url:", error);
+            return res.status(error.statusCode || 500).json({
+                message: error.message || "An unknown error occurred"
+            });
+        }
+    }
+    async uploadIntroductionVideo(req: Request, res: Response) {
         try {
             const token: string = req.headers.authorization as string;
-            const response = await this.userCase.fetchJobs(token);
-            return res.status(200).json({
-                message: "Question generated successfully",
-                jobs: response,
-            });
-        } catch (error: any) {
+            const verifiedDetails = await JwtService.verifyToken(token);
+            if (!verifiedDetails) {
+                return res.status(403).json({ message: "Invalid or expired refresh token" });
+            }
+            console.log("verifiedDetails", verifiedDetails);
+
+            const { userId } = verifiedDetails;
+            console.log(userId);
+            if(!req.body) {
+                return res.status(400).json({message: "Invalid Video Url.!"});
+            }
+            const {videoUrl} = req.body;
+            console.log("video url",videoUrl);
+
+            if(!videoUrl) {
+                return res.status(400).json({message: "Failed to upload video url"});
+            }
+
+            const user: any = {
+                id:userId,
+                video_url: videoUrl 
+            };
+            console.log("user controller", user )
+
+            const response = await this.userCase.updateProfile(user);
+            console.log("response in controller", response)
+
+            return res.status(200).json({message: "File uploaded successfully", videoUrl, response})
+            } catch (error: any) {
             console.log("Error in getching company jobs: ", error);
     
             return res.status(error.status || 500).json({
@@ -240,5 +282,39 @@ export class UserController {
             });
         }
     }
+    async updateResume(req: Request, res: Response): Promise<Response> {
+        try {
+            const token: string = req.headers.authorization as string;
+            const verifiedDetails = await JwtService.verifyToken(token);
+            if (!verifiedDetails) {
+                return res.status(403).json({ message: "Invalid or expired refresh token" });
+            }
+
+            const { userId } = verifiedDetails;
+            if(!req.file) {
+                return res.status(400).json({message: "Invalid file. Only PDFs allowed!"});
+            }
+            const fileUrl = (req.file as any).location;
+            console.log("file url",fileUrl);
+
+            if(!fileUrl) {
+                return res.status(400).json({message: "Failed to upload url"});
+            }
+
+            const user: any = {
+                id:userId,
+                resume_url: fileUrl 
+            };
+
+            const response = await this.userCase.updateProfile(user);
+
+            return res.status(200).json({message: "File uploaded successfully", fileUrl, response})
+            } catch (error: any) {
+            console.log("Error in getching company jobs: ", error);
     
+            return res.status(error.status || 500).json({
+                message: error.message || "An unknown error occurred",
+            });
+        }
+    }
 }

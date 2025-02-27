@@ -41,6 +41,8 @@ export class User {
     public password?: string;
     public contact?: { phone?: string | null };
     public profile_picture?: string | null;
+    public resume_url?: string | null;
+    public video_url?: string | null;
     public isBlocked?: boolean;
     public education?: { degree?: string | null; end_date?: string | null; institution?: string | null; start_date?: string | null }[];
     public job_preference?: object;

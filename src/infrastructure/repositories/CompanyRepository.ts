@@ -78,7 +78,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
     async findCompanyById(companyId: string): Promise<Company | null> {
         try {
             const company = await CompanyModel.findById(companyId).select("-password");
-            return company ? new Company({name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations}) : null;
+            return company ? new Company({id: company.id, name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations}) : null;
         } catch (error) {
             console.error("Error finding company by ID:", error);
             return null;
@@ -92,42 +92,6 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
              }) : null;
         } catch (error) {
             console.error("Error finding company by ID:", error);
-            return null;
-        }
-    }
-    async createJobs(jobDetails: Job, companyId: string): Promise<Job | null> {
-        try {
-            console.log('sdfsd',companyId)
-            const job = await JobModel.create({
-                jobTitle: jobDetails.jobTitle,
-                companyName: jobDetails.company,
-                companyId: companyId,
-                workplaceType: jobDetails.workplaceType,
-                jobType: jobDetails.jobType,
-                jobLocation: jobDetails.jobLocation,
-                description: jobDetails.description,
-                yearsExperienceExpecting: jobDetails.yearsExperienceExpecting,
-                responsibilities: jobDetails.responsibilities,
-                qualifications: jobDetails.qualifications,
-                skills: jobDetails.skills
-            });
-    
-            return job ? new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType }) : null;
-        } catch (error) {
-            console.error('Error creating job:', error);
-            return null;
-        }
-    }
-
-    async createQuiz(jobId: string, quizQuestions: Quiz): Promise<Quiz | null> {
-        try {
-            const quiz = await QuizModel.create({
-                questions: quizQuestions,
-                jobId: jobId,
-            })
-            return quiz ? new Quiz({id: quiz.id, jobId: quiz.jobId}) : null
-        } catch (error) {
-            console.error('Error creating quiz:', error);
             return null;
         }
     }

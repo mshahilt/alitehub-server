@@ -6,6 +6,11 @@ import { Otp } from "../../domain/entities/Otp";
 import { EmailService } from "../services/EmailService";
 import { Job } from "../../domain/entities/Job";
 import JobModel from "../database/models/JobModel";
+import { Quiz } from "../../domain/entities/Quiz";
+import QuizModel from "../database/models/QuizModel";
+import ApplicationModel from "../database/models/ApplicationModel";
+import { Application } from "../../domain/entities/Application";
+import mongoose from "mongoose";
 
 
 export class UserRepositoryImpl implements IUserRepository {
@@ -59,7 +64,7 @@ export class UserRepositoryImpl implements IUserRepository {
     }
     async findById(userId: string): Promise<User | null> {
         const user = await UserModel.findById(userId).select("-password");
-        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience }) : null;
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url, isBlocked: user.isBlocked }) : null;
     }    
     
     async create(user:User): Promise<User> {
@@ -75,7 +80,7 @@ export class UserRepositoryImpl implements IUserRepository {
 
     async findUserByUsername(username: string): Promise<User | null> {
         const user = await UserModel.findOne({username});
-        return user ? new User({id: user.id, name: user.name, username: user.username, email: user.email, password: user.password}) : null;
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url }) : null;
     }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -106,14 +111,22 @@ export class UserRepositoryImpl implements IUserRepository {
     
         return users.map(user => new User({ id: user.id, name: user.name, username: user.username, email: user.email }));
     }
-    async updateUserByEmail(user: User): Promise<User> {
+    async updateUserByEmail(user: User): Promise<User | null> {
+        console.log("user from update repo", user)
         const updatedUser = await UserModel.findOneAndUpdate(
-            { email: user.email },
+            { 
+                $or: [
+                    { email: user.email }, 
+                    { _id: user.id }
+                ] 
+            },
             {
                 name: user.name,
                 username: user.username,
                 contact: user.contact,
                 profile_picture: user.profile_picture,
+                resume_url: user.resume_url,
+                video_url: user.video_url,
                 job_types: user.job_types,
                 industries: user.industries,
                 skills: user.skills,
@@ -134,32 +147,28 @@ export class UserRepositoryImpl implements IUserRepository {
             },
             { new: true, runValidators: true }
         );
+
+        console.log("repos await", updatedUser?.name);
     
         if (!updatedUser) {
             throw new Error("User not found");
         }
     
-        return new User({
+        return updatedUser ? new User({
             id: updatedUser._id.toString(),
             name: updatedUser.name,
             username: updatedUser.username,
             email: updatedUser.email,
             contact: updatedUser.contact,
             profile_picture: updatedUser.profile_picture,
+            resume_url: updatedUser.resume_url,
+            video_url: updatedUser.video_url,
             job_types: updatedUser.job_types,
             industries: updatedUser.industries,
             skills: updatedUser.skills,
             education: updatedUser.education,
             experience: updatedUser.experience,
             updated_at: updatedUser.updated_at,
-        });
+        }) : null;
     }
-    async findAllJobs(): Promise<Job[] | null> {
-        const jobs = await JobModel.find().populate({
-            path: "companyId",
-            select: "profile_picture",
-        });
-        return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.createdAt, company_profile: job.companyId.profile_picture })) : null
-    }
-    
 }
