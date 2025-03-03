@@ -41,7 +41,6 @@ export class UserRepositoryImpl implements IUserRepository {
     }
     
     async verifyOtp(email: string, otp: string): Promise<boolean> {
-       
         try {
             const existingOtp = await OtpModel.findOne({ email, code: otp });
             

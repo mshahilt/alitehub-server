@@ -1,4 +1,4 @@
-import express from "express";
+ import express from "express";
 import { ApplicationController } from "../controllers/ApplicationController";
 import { ApplicationUseCase } from "../../application/useCases/ApplicationUseCase";
 import { ApplicationRepositoryImpl } from "../../infrastructure/repositories/ApplicationRepository";
