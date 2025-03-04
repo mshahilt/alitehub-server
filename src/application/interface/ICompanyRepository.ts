@@ -1,6 +1,5 @@
 import { Company } from "../../domain/entities/Company";
 import { Job } from "../../domain/entities/Job";
-import { Quiz } from "../../domain/entities/Quiz";
 
 export interface ICompanyRepository {
     createCompany(company: Company): Promise<Company>;

@@ -4,9 +4,18 @@ import { IPostRepository } from "../interface/IPostRepository";
 export class PostUseCase {
     constructor(private postRepository: IPostRepository) {}
 
-    async createPost(post: Post): Promise<Post> {
+    async createPost(post: Post, user_id: string): Promise<Post> {
         try {
-            return await this.postRepository.create(post);
+            const newPost = new Post({
+                userId: user_id,
+                title: post.title,
+                media: post.media,
+                description: post.description,
+                tags: post.tags,
+                time: new Date()
+            });
+            console.log("newPost", newPost);
+            return await this.postRepository.create(newPost);
         } catch (error: any) {
             throw new Error(`Failed to create post: ${error.message}`);
         }

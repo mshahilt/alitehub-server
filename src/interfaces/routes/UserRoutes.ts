@@ -4,11 +4,16 @@ import { UserUseCase } from "../../application/useCases/UserUseCase";
 import { UserRepositoryImpl } from "../../infrastructure/repositories/UserRepository";
 import { Request, Response } from "express";
 import { pdfUpload } from "../../infrastructure/config/multerConfig";
+import { ConnectionUseCase } from "../../application/useCases/ConnectionUseCase";
+import { ConnectionRepository } from "../../infrastructure/repositories/ConnectionRepository";
+import { AuthMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 const userRepository = new UserRepositoryImpl();
+const connectionRepository = new ConnectionRepository();
+const connectionUseCase = new ConnectionUseCase(connectionRepository);
 const createUserUseCase = new UserUseCase(userRepository);
-const userController = new UserController(createUserUseCase);
+const userController = new UserController(createUserUseCase,connectionUseCase);
 
 
 router.get('/getMe', async (req: Request, res: Response) => {
@@ -29,7 +34,7 @@ router.get('/getSignedUploadUrl', async (req: Request, res: Response) => {
 router.post('/uploadResume', pdfUpload.single("pdf"),async(req: Request, res: Response) => {
     await userController.updateResume(req, res);
 })
-router.get('/:username', async (req: Request, res: Response) => {
+router.get('/:username',AuthMiddleware("user"), async (req: Request, res: Response) => {
     await userController.fetchProfile(req, res)
 });
 

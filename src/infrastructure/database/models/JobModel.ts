@@ -12,8 +12,7 @@ interface IJob extends Document {
     responsibilities: string[];
     qualifications: string[];
     skills: string[];
-    createdAt: Date;
-    updatedAt: Date;
+    postedDate: Date;
 }
 
 const jobSchema = new Schema<IJob>({
@@ -64,6 +63,7 @@ const jobSchema = new Schema<IJob>({
         type: [String],
         required: true,
     },
+    postedDate: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 const JobModel = model<IJob>('Job', jobSchema);

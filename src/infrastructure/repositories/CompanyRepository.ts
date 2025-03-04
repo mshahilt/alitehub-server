@@ -98,7 +98,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
     async findJobsOfCompanyById(companyId: string): Promise<Job[] | null> {
         try {
             const jobs = await JobModel.find({companyId});
-            return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.createdAt })) : null
+            return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.postedDate })) : null
         } catch (error) {
             console.error('Error fetching job:', error);
             return null;

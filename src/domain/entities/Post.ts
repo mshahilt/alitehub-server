@@ -1,8 +1,9 @@
 export class Post {
     public readonly id!: string;
-    public user_id!: string;
+    public userId!: string;
     public media!: string;
     public title!: string;
+    public description!: string;
     public time!: Date;
     public tags!: string[];
 

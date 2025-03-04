@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import { UserUseCase } from "../../application/useCases/UserUseCase";
 import JwtService from "../../infrastructure/services/JwtService";
+import { ConnectionUseCase } from "../../application/useCases/ConnectionUseCase";
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 
 
 export class UserController {
-    constructor(private userCase: UserUseCase) {}
+    constructor(private userCase: UserUseCase, private connectionUseCase : ConnectionUseCase) {}
     async generateOtp(req: Request, res: Response): Promise<Response> {
         try {
             const {email} = req.body;
@@ -99,23 +101,28 @@ export class UserController {
             return res.status(400).json({message: "An unknown error occurred"});
         }
     }
-    async fetchProfile(req: Request, res: Response): Promise<Response> {
+    async fetchProfile(req: AuthenticatedRequest, res: Response): Promise<Response> {
         try {
             const token = req.headers.authorization;
             const { username } = req.params;
-    
-            console.log("Token inside profile controller:", token, "Username:", username);
+            const userId = req.userId;
+            if(!userId) {
+                throw new Error("User not authenticated");
+            }
     
             if (!token) {
                 return res.status(401).json({ message: "Authorization token is missing" });
             }
     
             const data = await this.userCase.fetchProfile(token, username);
+
+            const connectionInfo = await this.connectionUseCase.findUsersConnection(userId,data.user.id);
     
             return res.status(200).json({
                 message: "Profile fetched successfully",
                 user: data.user,
                 ownAccount: data.ownUserAcc,
+                connectionInfo,
             });
     
         } catch (error: any) {
@@ -226,11 +233,12 @@ export class UserController {
     async getSignedUploadUrl(req: Request, res: Response) {
         try {
             const token = req.headers.authorization;
-    
+            const resource_type = req.query.resource_type as string;
+            console.log("Resource Type:", resource_type);
             if (!token) {
                 return res.status(401).json({ message: "Authorization token is missing" });
             }
-            const response = await this.userCase.generateSignUploadUrl(token);
+            const response = await this.userCase.generateSignUploadUrl(token, resource_type);
             return res.status(200).json({
                 message: "Cloudinary Signature Generated",
                 signedUrl: response,

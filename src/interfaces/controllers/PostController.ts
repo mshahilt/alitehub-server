@@ -1,12 +1,19 @@
 import { PostUseCase } from "../../application/useCases/PostUseCase";
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 
 export class PostController {
     constructor(private postUseCase: PostUseCase) {}
-    async createPost(req: Request, res: Response): Promise<Response> {
+    async createPost(req: AuthenticatedRequest, res: Response): Promise<Response> {
         try {
             const post = req.body;
-            const response = await this.postUseCase.createPost(post);
+            const user_id = req.userId;
+            if(!user_id){
+                return res.status(401).json({ message: "Unauthorized: No token provided" });
+            }
+            console.log(post);
+            console.log(user_id);
+            const response = await this.postUseCase.createPost(post, user_id);
             return res.status(201).json({
                 message: "Post created successfully",
                 post: response,

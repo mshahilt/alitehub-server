@@ -18,6 +18,7 @@ export interface CreateUserDTO {
     otp: string;
 }
 export interface UserResponse {
+  id: string;
   name: string;
   email: string;
   username: string; 
@@ -68,7 +69,7 @@ export class UserUseCase {
     
         const token = JwtService.generateToken(createdUser.id, "user");
         const refreshToken = JwtService.generateRefreshToken(createdUser.id, "user");
-        const userResponse: UserResponse = { name: createdUser.name, email: createdUser.email, username: createdUser.username };
+        const userResponse: UserResponse = {id: createdUser.id, name: createdUser.name, email: createdUser.email, username: createdUser.username };
 
         return { user: userResponse, accessToken:token, refreshToken};
 
@@ -105,7 +106,7 @@ export class UserUseCase {
         }
         const jwtToken = JwtService.generateToken(user.id, role);
         const refreshToken = JwtService.generateRefreshToken(user.id, role);
-        const userResponse: UserResponse = { name: user.name, email: user.email, username: user.username };
+        const userResponse: UserResponse = {id: user.id, name: user.name, email: user.email, username: user.username };
       
         return { user: userResponse, accessToken:jwtToken, refreshToken };
       }
@@ -130,7 +131,7 @@ export class UserUseCase {
             }
             const accessToken = JwtService.generateToken(user.id, role);
             const refreshToken = JwtService.generateRefreshToken(user.id, role);
-            const userResponse:UserResponse = {name: user.name, email: user.email, username: user.username} 
+            const userResponse:UserResponse = {id: user.id,name: user.name, email: user.email, username: user.username} 
             console.log("userResponse", userResponse);
             return {user:userResponse, accessToken, refreshToken, message: `${user.name}'s account verified`};
         } else {
@@ -223,7 +224,7 @@ export class UserUseCase {
         throw new Error("User not found");
       }
       await this.userRepository.generateOtp(email);
-      const userResponse: UserResponse = { name: fetchedUser.name, email: fetchedUser.email, username: fetchedUser.username };
+      const userResponse: UserResponse = {id: fetchedUser.id, name: fetchedUser.name, email: fetchedUser.email, username: fetchedUser.username };
       console.log("from forgot password", userResponse);
       return { user: userResponse };
     } catch (error: any) {
@@ -279,11 +280,11 @@ export class UserUseCase {
       throw error;
     }
   }
-  async generateSignUploadUrl(token: string) {
+  async generateSignUploadUrl(token: string, resource_type: string) {
     try {
         const verifiedDetails = await JwtService.verifyToken(token);
         if (!verifiedDetails?.userId) {
-            throw Object.assign(new Error("Invalid token"), { statusCode: 401 });
+            throw Object.assign(new Error("Invalid token"), { statusCode: 400 });
         }
 
         const cloudName = process.env.CLOUDINARY_NAME;
@@ -297,14 +298,14 @@ export class UserUseCase {
         
         const signature = cloudinarySignature(timestamp);
 
-        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resource_type}/upload/`;
 
         return {
             signature,
             cloud_name: cloudName,
             api_key: apiKey,
             timestamp,
-            upload_url: uploadUrl, 
+            upload_url: uploadUrl
         };
     } catch (error) {
         console.error("Error generating signed upload URL:", error);

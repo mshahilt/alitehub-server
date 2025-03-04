@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: alitehub_server
+    ports:
+      - "5000:5000"  # Map port 5000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy  # Wait for RabbitMQ to be fully ready
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - RABBITMQ_HOST=rabbitmq  # Ensure app knows where to find RabbitMQ
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest     # Default credentials (adjust if customized)
+      - RABBITMQ_PASS=guest
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # RabbitMQ communication port
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest  # Explicitly set default user
+      - RABBITMQ_DEFAULT_PASS=guest  # Explicitly set default password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq  # Persist RabbitMQ data
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]  # Check if RabbitMQ is fully operational
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
+
+volumes:
+  rabbitmq_data:  # Named volume for RabbitMQ persistence
+
+networks:
+  app-network:
+    driver: bridge

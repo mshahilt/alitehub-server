@@ -6,29 +6,32 @@ interface DecodedToken {
     userId: string;
 }
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
     userId?: string;
 }
 
-export const authMiddleware = (requiredRole: string) => {
-    return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const AuthMiddleware = (requiredRole: string) => {
+    return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
         const token = req.headers.authorization;
 
         if (!token) {
-            return res.status(401).json({ message: "Unauthorized: No token provided" });
+            res.status(401).json({ message: "Unauthorized: No token provided" });
+            return;
         }
 
         try {
             const decoded = (await JwtService.verifyToken(token)) as DecodedToken;
             
             if (!decoded || decoded.role !== requiredRole) {
-                return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
+                res.status(403).json({ message: "Forbidden: Insufficient permissions" });
+                return;
             }
+            
             req.userId = decoded.userId;
-
             next();
         } catch (error) {
-            return res.status(403).json({ message: "Forbidden: Invalid token" });
+            res.status(401).json({ message: "Forbidden: Invalid token" });
+            return;
         }
     };
 };
