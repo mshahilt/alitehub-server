@@ -3,7 +3,8 @@ import { Quiz } from "../../domain/entities/Quiz";
 import { GenerateQuizAiService } from "../../infrastructure/services/GeminiAiModelService";
 import JwtService from "../../infrastructure/services/JwtService";
 import { IJobRepository } from "../interface/IJobRepository";
-
+import { getAccessTokenForSkills } from "../../infrastructure/config/lightCastSkills";
+import axios from "axios";
 
 
 export class JobUseCase {
@@ -91,11 +92,7 @@ export class JobUseCase {
         const quizService = new GenerateQuizAiService();
         const AiQuizScore = await quizService.evaluateQuestionAndAnswer(questionAnswerPairs);
         const quizScore = Number(AiQuizScore.split('/')[0])
-        console.log("userId", userId);
-        console.log("answers", answers);
-        console.log("token", token);
-        console.log("quizId", quizId);
-
+        
         const response = await this.jobRepository.applyForJob(userId, jobId, quizId, quizScore);
         console.log(response)
 
@@ -113,7 +110,6 @@ export class JobUseCase {
     ): Promise<string[]> { 
         try {
             const verifiedDetails = await JwtService.verifyToken(token);
-            console.log("Verified user details:", verifiedDetails);
     
             if (!verifiedDetails?.userId) {
                 const error: any = new Error("Invalid or expired token");
@@ -125,7 +121,6 @@ export class JobUseCase {
             
             const quizQuestions = responseText.match(/Question \d+: (.+)/g)?.map(q => q.replace(/Question \d+: /, '').trim()) || [];
     
-            console.log("Generated Quiz Questions:", quizQuestions);
             return quizQuestions;
         } catch (error: any) {
             console.error("Error in generateQuizQuestions:", error);
@@ -161,6 +156,56 @@ export class JobUseCase {
           throw error;
       }
   }
+  async updateJob(jobId: string, jobDetails: Job, token: string): Promise<boolean> {
+    try {
+      const verifiedDetails = await JwtService.verifyToken(token);
+      if (!verifiedDetails?.userId) {
+        const error: any = new Error("Invalid or expired token");
+        error.statusCode = 400;
+        throw error;
+      }
 
+      const updatedJob = await this.jobRepository.updateJob(jobId, jobDetails);
+      if (!updatedJob) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in updating job post:", error);
+      throw error;
+    }
+  }
+  async getAccessTokenForSkills() {
+    try {
+      return await getAccessTokenForSkills();
+    } catch (error) {
+      console.error("Error in getting access token for skills:", error);
+      throw error;
+    }
+  }
+  async fetchSkills(query: string, token: string): Promise<any> {
+    try {
+      const response = await axios.get(
+          "https://emsiservices.com/skills/versions/latest/skills",
+          {
+              params: {
+                  q: query, // Search query (e.g., "React.js")
+                  typeIds: "ST1", // Only fetch Hard Skills
+                  fields: "id,name,type,infoUrl", // Only needed fields
+              },
+              headers: {
+                  Authorization: `Bearer ${token}`,
+              },
+          }
+      );
+
+      
+      return response.data;
+  } catch (error: any) {
+      console.error("Error fetching skills data:", error.response?.data || error.message);
+      throw new Error("Failed to fetch skills from Lightcast API.");
+  }
+}
   
 }

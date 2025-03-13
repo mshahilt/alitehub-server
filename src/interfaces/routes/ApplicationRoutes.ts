@@ -17,7 +17,7 @@ router.get('/company', async (req, res) => {
 router.get('/user', async (req, res) => {
     await applicationController.fetchApplicationsOfUser(req, res);
 });
-router.get('/application/:applicationId', async (req, res) => {
+router.get('/:id', async (req, res) => {
     await applicationController.fetchApplicationById(req, res);
 });
 

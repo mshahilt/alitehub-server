@@ -13,12 +13,14 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - RABBITMQ_HOST=rabbitmq  # Ensure app knows where to find RabbitMQ
+      - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - RABBITMQ_USER=guest     # Default credentials (adjust if customized)
+      - RABBITMQ_USER=guest
       - RABBITMQ_PASS=guest
+      - CHOKIDAR_USEPOLLING=true  # Ensures file watching works in Docker
     networks:
       - app-network
+    command: ["npm", "run", "dev"]  # Ensures TypeScript hot-reloading works
 
   rabbitmq:
     image: "rabbitmq:3-management"
@@ -27,12 +29,12 @@ services:
       - "5672:5672"   # RabbitMQ communication port
       - "15672:15672" # RabbitMQ management UI
     environment:
-      - RABBITMQ_DEFAULT_USER=guest  # Explicitly set default user
-      - RABBITMQ_DEFAULT_PASS=guest  # Explicitly set default password
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq  # Persist RabbitMQ data
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]  # Check if RabbitMQ is fully operational
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
       timeout: 5s
       retries: 5

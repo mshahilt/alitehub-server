@@ -15,8 +15,11 @@ export class PostRepositoryImpl implements IPostRepository {
     }
 
     async findByUserId(user_id: string): Promise<Post[]> {
-        return await PostModel.find({ user_id });
+       return await PostModel.find({ userId: user_id });
     }
+    async findCountOfUserPosts(user_id: string): Promise<number> {
+        return await PostModel.countDocuments({ userId: user_id });
+    };
 
     async update(id: string, data: Partial<Post>): Promise<Post | null> {
         return await PostModel.findByIdAndUpdate(id, data, { new: true });
@@ -27,8 +30,25 @@ export class PostRepositoryImpl implements IPostRepository {
         return result !== null;
     }
 
-    async getAll(limit: number, offset: number): Promise<Post[]> {
-        const posts =  await PostModel.find().skip(offset).limit(limit);
-        return posts.map((post) => new Post({id: post.id, media: post.media, title: post.title, tags: post.tags, time: post.time}));
-    }
+    async getAll(limit: number, page: number): Promise<Post[]> {
+        const skip = (page - 1) * limit;
+      
+        const posts = await PostModel.find()
+          .sort({ createdAt: -1 }) 
+          .skip(skip)
+          .limit(limit);
+      
+        console.log('posts from post repo', posts);
+      
+        return posts.map((post) =>
+          new Post({
+            id: post.id,
+            media: post.media,
+            title: post.title,
+            tags: post.tags,
+            description: post.description,
+            time: post.time,
+          })
+        );
+      }
 }

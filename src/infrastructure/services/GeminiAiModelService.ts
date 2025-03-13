@@ -16,7 +16,7 @@ export class GenerateQuizAiService {
     async generateQuestion(jobDescription: string, jobResponsibility: string, yearOfExperience: string): Promise<string> {
         try {
             const prompt = `Analyze the job description: "${jobDescription}" and determine the most relevant job role (e.g., MERN Stack Developer, Backend Developer, Frontend Developer, etc.).
-                            Based on the identified role, generate exactly 5 highly technical interview questions covering key technologies and concepts related to that role.
+                            Based on the identified role, generate exactly 5 highly technical interview questions covering key technologies and concepts related to that role, questions needs to be answered in few words(max: 5).
 
                             Each question should be formatted as follows to make extraction easier:
 

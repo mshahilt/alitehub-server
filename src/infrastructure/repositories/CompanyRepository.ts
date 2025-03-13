@@ -7,8 +7,6 @@ import { Otp } from "../../domain/entities/Otp";
 import { EmailService } from "../services/EmailService";
 import { Company } from "../../domain/entities/Company";
 import { Job } from "../../domain/entities/Job";
-import { Quiz } from "../../domain/entities/Quiz";
-import QuizModel from "../database/models/QuizModel";
 
 export class CompanyRepositoryImpl implements ICompanyRepository {
     async generateOtp(email: string): Promise<string> {
@@ -40,7 +38,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
         if (!company) {
             return null;
         }
-        return new Company({id:company.id, name:company.name, email:company.email, password:company.password});
+        return new Company({id:company.id, isBlock:company.isBlock,name:company.name, email:company.email, password:company.password});
     }
     async createCompany(company: Company): Promise<Company> {
         const createdCompany = await CompanyModel.create({
@@ -78,7 +76,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
     async findCompanyById(companyId: string): Promise<Company | null> {
         try {
             const company = await CompanyModel.findById(companyId).select("-password");
-            return company ? new Company({id: company.id, name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations}) : null;
+            return company ? new Company({id: company.id, isBlock:company.isBlock, name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations}) : null;
         } catch (error) {
             console.error("Error finding company by ID:", error);
             return null;
@@ -87,7 +85,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
     async findCompanyByCompanyIdentifier(companyIdentifier: string): Promise<Company | null> {
         try {
             const company = await CompanyModel.findOne({companyIdentifier});
-            return company ? new Company({ id: company.id, name: company.name, companyIdentifier: company.companyIdentifier, email: company.email,
+            return company ? new Company({ id: company.id, isBlock:company.isBlock, name: company.name, companyIdentifier: company.companyIdentifier, email: company.email,
                 companyType: company.companyType, industry: company.industry, profile_picture: company.profile_picture 
              }) : null;
         } catch (error) {
@@ -118,7 +116,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
             }
     
             await company.save(); 
-            return new Company({name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations});
+            return new Company({name: company.name, email: company.email, companyIdentifier: company.companyIdentifier, industry: company.industry, companyType: company.companyType, contact: company.contact, profile_picture: company.profile_picture, locations: company.locations, isBlock: company.isBlock});
         } catch (error) {
             console.error("Error updating company:", error);
             throw error;

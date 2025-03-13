@@ -7,6 +7,7 @@ export class Application {
     public status!: string;
     public quiz_score!: number;
     public quiz_id!: ObjectId;
+    public interview!: string;
 
     constructor(data: Partial<Application>) {
         Object.assign(this, data);

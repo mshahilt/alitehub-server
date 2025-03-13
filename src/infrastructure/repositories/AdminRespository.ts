@@ -17,7 +17,7 @@ export class AdminRepositoryImpl implements IAdminRepository {
     }
     async fetchAllCompanies(): Promise<Company[]> {
         const companies = await CompanyModel.find();
-        return companies.map(company => new Company({id: company.id, name: company.name, email:company.email , companyIdentifier: company.companyIdentifier, industry: company.industry, profile_picture: company.profile_picture, locations: company.locations, companyType: company.companyType}));
+        return companies.map(company => new Company({id: company.id, name: company.name, email:company.email , companyIdentifier: company.companyIdentifier, industry: company.industry, profile_picture: company.profile_picture, locations: company.locations, companyType: company.companyType, contact: company.contact, isBlock: company.isBlock}));
     }
 
     async fetchCompanyById(companyId: string): Promise<Company | null> {
@@ -35,10 +35,6 @@ export class AdminRepositoryImpl implements IAdminRepository {
         return user ? new User(user) : null;
     }
 
-    async blockOrUnblockCompany(companyId: string, company: Partial<Company>): Promise<Company | null> {
-        const updatedCompany = await CompanyModel.findByIdAndUpdate(companyId, company, { new: true });
-        return updatedCompany ? new Company(updatedCompany) : null;
-    }
 
     async blockOrUnblockUser(userId: string): Promise<UserResponse | null> {
         const user = await UserModel.findById(userId);
@@ -47,7 +43,33 @@ export class AdminRepositoryImpl implements IAdminRepository {
         user.isBlocked = !user.isBlocked;
         await user.save();
     
-        return user;
+        return {
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            isBlocked: user.isBlocked
+        };
     }
-    
+
+    async blockOrUnblockCompany(companyId: string): Promise<Company | null> {
+        const company = await CompanyModel.findById(companyId);
+        if (!company) return null;
+
+        company.isBlock = !company.isBlock;
+        await company.save();
+
+        return new Company({
+            id: company.id,
+            name: company.name,
+            email: company.email,
+            companyIdentifier: company.companyIdentifier,
+            industry: company.industry,
+            profile_picture: company.profile_picture,
+            locations: company.locations,
+            companyType: company.companyType,
+            contact: company.contact,
+            isBlock: company.isBlock
+        });
+    }
 }

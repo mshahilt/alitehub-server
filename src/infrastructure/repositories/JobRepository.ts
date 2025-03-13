@@ -15,12 +15,12 @@ export class JobRepositoryImpl implements IJobRepository {
             path: "companyId",
             select: "profile_picture",
         });
-        return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.createdAt, company_profile: job.companyId.profile_picture })) : null
+        return jobs ? jobs.map(job => new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, workplaceType: job.workplaceType, postedDate: job.postedDate, company_profile: job.companyId.profile_picture })) : null
     }
     async findJobById(jobId: string): Promise<Job | null> {
         try {
             const job = await JobModel.findById(jobId);
-            return job ? new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, company_profile: job.companyId.profile_picture, workplaceType: job.workplaceType,jobType: job.jobType, jobLocation: job.jobLocation ,postedDate: job.createdAt,
+            return job ? new Job({ id: job.id,jobTitle:job.jobTitle, company: job.companyName, company_profile: job.companyId.profile_picture, workplaceType: job.workplaceType,jobType: job.jobType, jobLocation: job.jobLocation ,postedDate: job.postedDate,
                 description: job.description, yearsExperienceExpecting: job.yearsExperienceExpecting, responsibilities: job.responsibilities, qualifications: job.qualifications, skills: job.skills
             }) : null;
         } catch (error) {
@@ -92,6 +92,31 @@ export class JobRepositoryImpl implements IJobRepository {
             return quiz ? new Quiz({id: quiz.id, jobId: quiz.jobId}) : null
         } catch (error) {
             console.error('Error creating quiz:', error);
+            return null;
+        }
+    }
+    async updateJob(jobId: string, jobDetails: Partial<Job>): Promise<Job | null> {
+        try {
+            console.log("jobID",jobId);
+            console.log("jobDetails",jobDetails);
+            const updatedJob = await JobModel.findByIdAndUpdate(jobId, jobDetails, { new: true });
+            return updatedJob ? new Job({
+                id: updatedJob.id,
+                jobTitle: updatedJob.jobTitle,
+                company: updatedJob.companyName,
+                company_profile: updatedJob.companyId.profile_picture,
+                workplaceType: updatedJob.workplaceType,
+                jobType: updatedJob.jobType,
+                jobLocation: updatedJob.jobLocation,
+                postedDate: updatedJob.postedDate,
+                description: updatedJob.description,
+                yearsExperienceExpecting: updatedJob.yearsExperienceExpecting,
+                responsibilities: updatedJob.responsibilities,
+                qualifications: updatedJob.qualifications,
+                skills: updatedJob.skills
+            }) : null;
+        } catch (error) {
+            console.error('Error updating job:', error);
             return null;
         }
     }

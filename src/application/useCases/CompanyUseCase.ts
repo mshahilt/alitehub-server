@@ -189,14 +189,12 @@ export class CompanyUseCase {
     async fetchCompanyUsingToken(token: string): Promise<{ company: CompanyResponse }> {
       try {
           const verifiedDetails = await JwtService.verifyToken(token);
-          console.log("verifiedDetails", verifiedDetails);
           if (!verifiedDetails?.userId) {
               const error: any = new Error("Invalid or expired token");
               error.statusCode = 400; 
               throw error;
           }
           const authenticatedCompany = await this.companyRepository.findCompanyById(verifiedDetails.userId);
-          console.log("authenticatedCompany", authenticatedCompany);
         
           if (!authenticatedCompany) {
               const error: any = new Error("User not found");
@@ -218,7 +216,6 @@ export class CompanyUseCase {
     async getCompanyJobs(token: string): Promise<Job[] | null> {
         try {
             const verifiedDetails = await JwtService.verifyToken(token);
-            console.log("Verified user details:", verifiedDetails);
     
             if (!verifiedDetails?.userId) {
                 const error: any = new Error("Invalid or expired token");
@@ -283,5 +280,11 @@ export class CompanyUseCase {
             throw error;
         }
     }
-      
+    async updateCompanyDetails(companyId: string, companyData: Partial<Company>) {
+        try {
+            return this.companyRepository.updateCompanyById(companyId,companyData);
+        } catch (error) {
+            
+        }
+    }
 }

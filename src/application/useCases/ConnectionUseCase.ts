@@ -1,4 +1,5 @@
 import { Connection } from "../../domain/entities/Connection";
+import { sendNotification } from "../../infrastructure/config/rabbitmqConfig";
 import { IConnectionRepository } from "../interface/IConnectionRepository";
 
 export class ConnectionUseCase {
@@ -13,8 +14,13 @@ export class ConnectionUseCase {
         console.log("userId2", userId2);
 
         const result =  await this.connectionRepository.create({userId1, userId2, status: "pending", requestedAt: new Date()});
+        await sendNotification({
+            receiverId: userId2,
+            type: "connection_request",
+            message: `mshahilt sent you a connection request.`,
+        });
         console.log("result", result);
-        return result
+        return result;
     }
 
     async findUsersConnection(userId1: string, userId2: string): Promise<Connection | null> {
@@ -23,15 +29,20 @@ export class ConnectionUseCase {
     }
 
     async acceptConnection(connectionId: string): Promise<Connection> {
-        const connection = await this.connectionRepository.updateStatus(connectionId, "Accepted", new Date());
+        const connection = await this.connectionRepository.updateStatus(connectionId, "accepted", new Date());
         if (!connection) {
             throw new Error("Connection not found");
         }
+        await sendNotification({
+            receiverId: connection.userId1,
+            type: "connection_request",
+            message: `User sareena sent you a connection request.`,
+        });
         return connection;
     }
 
     async declineConnection(connectionId: string): Promise<Connection> {
-        const connection = await this.connectionRepository.updateStatus(connectionId, "Declined", new Date());
+        const connection = await this.connectionRepository.updateStatus(connectionId, "declined", new Date());
         if (!connection) {
             throw new Error("Connection not found");
         }
@@ -44,6 +55,9 @@ export class ConnectionUseCase {
 
     async findUserConnections(userId: string): Promise<Connection[]> {
         return this.connectionRepository.findUserConnections(userId);
+    }
+    async findUserConnectionsCount(userId: string): Promise<number> {
+        return this.connectionRepository.findCountOfUserConnections(userId);
     }
 
     async deleteConnection(connectionId: string): Promise<boolean> {

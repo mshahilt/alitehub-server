@@ -22,6 +22,7 @@ export interface UserResponse {
   name: string;
   email: string;
   username: string; 
+  isBlocked?: boolean;
 }
 
 
@@ -113,10 +114,8 @@ export class UserUseCase {
       
 
     async userLogin(email: string, password: string) : Promise<{ user: UserResponse; accessToken: string;refreshToken:string; message:string }> {
-        console.log("from use case email:",email,"password", password);
         const user = await this.userRepository.findByEmail(email);
         const role = 'user';
-        console.log("user from db", user);
         if (!user) {
             throw new Error("User not found");
         }
@@ -124,7 +123,6 @@ export class UserUseCase {
             throw new Error("User password is undefined");
         }
         const isVerified = await bcrypt.compare(password, user.password);
-        console.log("isVerified", isVerified);
         if(isVerified){
             if (!user.id) {
                 throw new Error("User ID is null");

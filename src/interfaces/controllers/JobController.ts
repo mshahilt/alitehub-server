@@ -7,10 +7,12 @@ export class JobController {
     
     async fetchJobs(req:Request, res: Response): Promise<Response> {
         try {
+            console.log("fun job called")
             const token: string = req.headers.authorization as string;
             const response = await this.jobUseCase.fetchJobs(token);
+            console.log("Job response", response);
             return res.status(200).json({
-                message: "Question generated successfully",
+                message: "Jobs fetched successfully",
                 jobs: response,
             });
         } catch (error: any) {
@@ -138,5 +140,46 @@ export class JobController {
             });
         }
     }
+    async updateJob(req: Request, res: Response): Promise<Response> {
+        try {
+            const token = req.headers.authorization;
+            const { jobId } = req.params;
+            console.log("req.body of update job", req.body);
+            const {jobDetails} = req.body;
+
+            if (!token) {
+                return res.status(401).json({ message: "Authorization token is missing" });
+            }
+
+            const response = await this.jobUseCase.updateJob(jobId, jobDetails, token);
+            return res.status(200).json({
+                message: "Job updated successfully",
+                job: response,
+            });
+        } catch (error: any) {
+            console.error("Error in updating job:", error);
+            return res.status(error.statusCode || 500).json({
+                message: error.message || "An unknown error occurred"
+            });
+        }
+    }
+
+    async fetchSkills(req: Request, res: Response): Promise<Response> {
+        try {
+            const { query } = req.query;
+            if (!query) {
+                return res.status(400).json({ error: "Query parameter is required" });
+            }
+
+            const token = await this.jobUseCase.getAccessTokenForSkills();
+            const response = await this.jobUseCase.fetchSkills(query as string, token);
+
+            return res.status(200).json(response.data);
+        } catch (error: any) {
+            console.error("Error fetching skills:", error.response?.data || error.message);
+            return res.status(500).json({ error: "Failed to fetch skills" });
+        }
+    }
+     
 
 }

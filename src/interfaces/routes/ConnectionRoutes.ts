@@ -26,6 +26,9 @@ router
     .get("/:userId/connections",AuthMiddleware("user"), async (req, res) => {
         await connectionController.findUserConnections(req, res);
     })
+    .get("/:userId/count",AuthMiddleware("user"), async (req, res) => {
+        await connectionController.findUserConnectionsCount(req, res);
+    })
     .delete("/:connectionId",AuthMiddleware("user"), async (req, res) => {
         await connectionController.deleteConnection(req, res);
     });

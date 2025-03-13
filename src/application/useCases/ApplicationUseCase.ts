@@ -62,8 +62,18 @@ export class ApplicationUseCase {
             throw new Error("Failed to create application");
         }
     }
-    
-    
+    async updateApplication(applicationId: string, applicationData: Partial<Application>): Promise<Application | null> {
+        try {
+            const application = await this.applicationRepository.updateApplication(applicationId, applicationData);
+            if (!application) {
+                throw new Error("Application not found");
+            }
+            return application;
+        } catch (error) {
+            console.error("Error updating application:", error);
+            throw new Error("Failed to update application");
+        }
+    }
     
     
     

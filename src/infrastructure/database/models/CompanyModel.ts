@@ -12,6 +12,7 @@ interface ICompany extends Document {
     };
     profile_picture?: string | null;
     locations?: string[] | null;
+    isBlock?: boolean;
 }
 
 const CompanySchema: Schema = new Schema<ICompany>({
@@ -25,7 +26,8 @@ const CompanySchema: Schema = new Schema<ICompany>({
         phone: { type: String, default: null }
     },
     profile_picture: { type: String, default: null },
-    locations: { type: [String], default: null }
+    locations: { type: [String], default: null },
+    isBlock: { type: Boolean, default: true}
 }, {
     timestamps: true
 });

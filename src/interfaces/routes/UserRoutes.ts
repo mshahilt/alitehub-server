@@ -16,7 +16,7 @@ const createUserUseCase = new UserUseCase(userRepository);
 const userController = new UserController(createUserUseCase,connectionUseCase);
 
 
-router.get('/getMe', async (req: Request, res: Response) => {
+router.get('/getMe',AuthMiddleware("user"), async (req: Request, res: Response) => {
     await userController.fetchUserUsingToken(req, res);
 });
 router.get('/users/getAllUsers', async (req: Request, res: Response) => {

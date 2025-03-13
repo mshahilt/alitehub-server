@@ -61,6 +61,15 @@ class ConnectionController {
             return res.status(500).json({ success: false, message: error.message });
         }
     }
+    async findUserConnectionsCount(req: Request, res: Response): Promise<Response> {
+        try {
+            const { userId } = req.params;
+            const connections = await this.connectionUseCase.findUserConnectionsCount(userId);
+            return res.status(200).json({ success: true, count: connections });
+        } catch (error: any) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    }
 
     async deleteConnection(req: Request, res: Response): Promise<Response> {
         try {

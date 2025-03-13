@@ -16,14 +16,13 @@ export const connectRabbitMQ = async () => {
     console.log("✅ Connected to RabbitMQ");
   } catch (error) {
     console.error("❌ RabbitMQ Connection Error:", error);
-    process.exit(1); // Exit if RabbitMQ fails to connect
+    process.exit(1);
   }
 };
 
-// /**
-//  * Send a notification message to RabbitMQ.
-//  * @param message The notification object to be sent.
-//  */
+/**
+ * Send a notification message to RabbitMQ.
+ */
 export const sendNotification = async (message: object) => {
   if (!channel) {
     console.error("❌ RabbitMQ channel is not initialized");
@@ -38,31 +37,37 @@ export const sendNotification = async (message: object) => {
   }
 };
 
-// /**
-//  * Consume notification messages from RabbitMQ and emit to Socket.IO.
-//  * @param io The Socket.IO server instance.
-//  */
-export const consumeNotifications = async (io: any) => {
+/**
+ * Consume notification messages from RabbitMQ and emit to Socket.IO.
+ */
+export const consumeNotifications = async (io: any, userSocketMap: Map<string, string>) => {
   if (!channel) {
-    console.error("❌ RabbitMQ channel is not initialized");
-    return;
+      console.error("❌ RabbitMQ channel is not initialized");
+      return;
   }
 
   try {
-    await channel.consume(QUEUE_NAME, (msg) => {
-      if (msg !== null) {
-        const message = JSON.parse(msg.content.toString());
-        console.log("📩 Received notification:", message);
+      await channel.consume(QUEUE_NAME, (msg) => {
+          if (msg !== null) {
+              const message = JSON.parse(msg.content.toString());
+              console.log("📩 Received notification:", message);
 
-        // Emit the notification to connected clients via WebSockets
-        io.emit("receive_notification", message);
+              // Get the recipient's socket ID from the map
+              const recipientSocketId = userSocketMap.get(message.receiverId);
 
-        channel!.ack(msg);
-      }
-    });
+              if (recipientSocketId) {
+                  io.to(recipientSocketId).emit("receive_notification", message);
+                  console.log(`📤 Notification sent to user ${message.receiverId}`);
+              } else {
+                  console.log(`⚠️ User ${message.receiverId} is not online`);
+              }
 
-    console.log("👂 Listening for RabbitMQ notifications...");
+              channel!.ack(msg);
+          }
+      });
+
+      console.log("👂 Listening for RabbitMQ notifications...");
   } catch (error) {
-    console.error("❌ Error consuming notifications:", error);
+      console.error("❌ Error consuming notifications:", error);
   }
 };

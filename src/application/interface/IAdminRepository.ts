@@ -6,10 +6,9 @@ import { UserResponse } from "../useCases/UserUseCase";
 export interface IAdminRepository {
     fetchAllCompanies(): Promise<Company[]>;
     fetchCompanyById(companyId: string): Promise<Company | null>;
-    blockOrUnblockCompany(companyId: string, company: Partial<Company>): Promise<Company | null>;
     findAdminByEmail(email: string): Promise<Admin | null>;
     fetchAllUsers(): Promise<User[] | null>;
     fetchUserById(userId: string): Promise<User | null>;
     blockOrUnblockUser(userId: string): Promise<UserResponse | null>;
-   
+    blockOrUnblockCompany(companyId: string): Promise<Company | null>;
 }

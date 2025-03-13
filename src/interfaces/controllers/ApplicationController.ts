@@ -4,19 +4,19 @@ import JwtService from "../../infrastructure/services/JwtService";
 import { Types } from "mongoose";
 
 export class ApplicationController {
-    constructor(private applicationUseCase: ApplicationUseCase) {}
+constructor(private applicationUseCase: ApplicationUseCase) {}
 
 
     async fetchApplicationById(req: Request, res: Response): Promise<Response> {
         try {
-            const { applicationId } = req.params;
+            const { id } = req.params;
             const token = req.headers.authorization;
             
             if (!token) {
                 return res.status(401).json({ message: "Authorization token missing" });
             }
 
-            const application = await this.applicationUseCase.fetchApplicationById(applicationId, token);
+            const application = await this.applicationUseCase.fetchApplicationById(id, token);
             
             if (!application) {
                 return res.status(404).json({ message: "Application not found" });

@@ -16,7 +16,6 @@ export class AdminUseCase {
     constructor(private adminRepository: IAdminRepository) {}
 
     async adminLogin(email: string, password: string): Promise<{admin:AdminResponse; accessToken: string}> {
-        console.log("admin credentials",email, password);
         const admin = await this.adminRepository.findAdminByEmail(email);
         console.log(admin);
         if(!admin) {
@@ -32,7 +31,6 @@ export class AdminUseCase {
             const role = "admin"
             const accessToken = JwtService.generateToken(admin.id, role);
             const adminResponse: AdminResponse = {name: admin.name, email: admin.email};
-            console.log("Admin verified response: ", adminResponse);
             return {admin: adminResponse, accessToken}
         } else {
              throw new Error("Invalid credentials");
@@ -69,6 +67,18 @@ export class AdminUseCase {
         } catch (error) {
             console.log("Error in fetching all companies for admin", error);
             throw new Error("Error in block or unblock user from admin")
+        }
+    }
+    async blockOrUnblockCompany(companyId: string): Promise<{company: Company}> {
+        try {
+            const updatedCompany = await this.adminRepository.blockOrUnblockCompany(companyId);
+            if (!updatedCompany) {
+                throw new Error("Company not found");
+            }
+            return {company: updatedCompany}
+        } catch (error) {
+            console.log("Error in blocking or unblocking company for admin", error);
+            throw new Error("Error in blocking or unblocking company for admin")
         }
     }
 }

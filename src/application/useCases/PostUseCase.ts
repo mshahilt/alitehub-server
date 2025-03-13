@@ -36,7 +36,13 @@ export class PostUseCase {
             throw new Error(`Failed to get posts by user id: ${error.message}`);
         }
     }
-
+    async getPostsCountByUserId(user_id: string): Promise<number> {
+        try {
+            return await this.postRepository.findCountOfUserPosts(user_id);
+        }catch (error: any) {
+            throw new Error(`Failed to get posts count by user id: ${error.message}`);
+        }
+    }
     async updatePost(id: string, data: Partial<Post>): Promise<Post | null> {
         try {
             return await this.postRepository.update(id, data);
@@ -53,9 +59,9 @@ export class PostUseCase {
         }
     }
 
-    async getAllPosts(limit: number, offset: number): Promise<Post[]> {
+    async getAllPosts(limit: number, page: number): Promise<Post[]> {
         try {
-            return await this.postRepository.getAll(limit, offset);
+            return await this.postRepository.getAll(limit, page);
         } catch (error: any) {
             throw new Error(`Failed to get all posts: ${error.message}`);
         }

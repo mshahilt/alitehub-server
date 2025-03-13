@@ -23,6 +23,12 @@ router.post("/generateQuizQuestions", async(req: Request, res: Response) => {
 router.post("/add", async(req: Request, res: Response) => {
     await jobController.addJobPost(req, res);
 })
+router.put('/update/:jobId', async(req: Request, res: Response) => {
+    await jobController.updateJob(req, res);
+});
+router.get('/skills/', async (req: Request, res: Response) => {
+    await jobController.fetchSkills(req, res);
+});
 router.get('/:jobId', async (req: Request, res: Response) => {
     await jobController.fetchJobById(req, res);
 });
@@ -30,5 +36,6 @@ router.get('/quiz/:jobId', async(req:Request, res: Response) => {
     await jobController.fetchQuizByJobId(req, res);
 })
 
+
 export {jobController}
-export default express.Router()
+export default router;

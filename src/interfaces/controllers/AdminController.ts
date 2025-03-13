@@ -42,4 +42,13 @@ export class AdminController {
             return res.status(400).json({message: error.message});
         }
     }
+    async blockOrUnblockCompany(req: Request, res: Response): Promise<Response> {
+        try {
+            const {companyId} = req.params;
+            const company = await this.adminUseCase.blockOrUnblockCompany(companyId);
+            return res.status(200).json({message: "Updated block status of company", company});
+        } catch (error: any) {
+            return res.status(400).json({message: error.message});
+        }
+    }
 }

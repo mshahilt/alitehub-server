@@ -1,5 +1,6 @@
 import { Request, Response} from "express";
 import { CompanyUseCase } from "../../application/useCases/CompanyUseCase";
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 
 
 export class CompanyController{
@@ -170,6 +171,25 @@ export class CompanyController{
             });
         } catch (error: any) {
             console.error("Error in uploading profile image:", error);
+            return res.status(error.statusCode || 500).json({
+                message: error.message || "An unknown error occurred",
+            });
+        }
+    }
+
+    async updateCompanyDetails(req: AuthenticatedRequest, res: Response) {
+        try {
+            const { companyId } = req.params;
+            const companyData = req.body.companyData;
+
+
+            const updatedCompany = this.companyUseCase.updateCompanyDetails(companyId, companyData);
+            return res.status(200).json({
+                message: "Company update successfully",
+                data: updatedCompany,
+            });
+        } catch (error: any) {
+            console.error("Error in updating company details:", error);
             return res.status(error.statusCode || 500).json({
                 message: error.message || "An unknown error occurred",
             });

@@ -21,8 +21,12 @@ router.get("/getUsers", async(req: Request, res: Response) => {
 router.get("/getCompanies", async(req: Request, res: Response) => {
     await adminController.getAllcompanies(req, res);
 })
-router.patch('/blockOrUnblock/:userId', async(req: Request, res: Response) => {
+router.patch('/blockOrUnblockUser/:userId', async(req: Request, res: Response) => {
     await adminController.blockOrUnblockUser(req, res);
+})
+
+router.patch('/blockOrUnblockCompany/:companyId', async(req: Request, res: Response) => {
+    await adminController.blockOrUnblockCompany(req, res);
 })
 
 export{adminController};

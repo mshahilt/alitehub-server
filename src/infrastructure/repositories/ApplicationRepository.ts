@@ -88,19 +88,51 @@ export class ApplicationRepositoryImpl implements IApplicationRepository {
     
 
     async fetchApplicationById(applicationId: string): Promise<Application | null> {
-        const application = await ApplicationModel.findById(applicationId).populate(['user_id', 'job_id']);
+        const applications = await ApplicationModel.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(applicationId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "jobs",
+                    localField: "job_id",
+                    foreignField: "_id",
+                    as: "jobDetails"
+                }
+            },
+            { $unwind: "$jobDetails" },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            { $unwind: "$userDetails" },
+            {
+                $lookup: {
+                    from: "calls",
+                    localField: "interview",
+                    foreignField: "_id",
+                    as: "interviewDetails"
+                }
+            },
+            { 
+                $unwind: { 
+                    path: "$interviewDetails", 
+                    preserveNullAndEmptyArrays: true 
+                } 
+            }
+        ]);
+    
+        if (!applications.length) return null;
 
-    if (!application) return null;
-
-    return new Application({
-        id: application._id,
-        job_id: application.job_id,
-        user_id: application.user_id,
-        status: application.status,
-        quiz_score: application.quiz_score,
-        quiz_id: application.quiz_id
-    });
+        return applications[0];
     }
+    
     async createApplication(applicationData: Application): Promise<Application | null> {
         const application = new ApplicationModel(applicationData);
 
@@ -114,6 +146,24 @@ export class ApplicationRepositoryImpl implements IApplicationRepository {
         quiz_score: savedApplication.quiz_score,
         quiz_id: savedApplication.quiz_id
     });
+    }
+    async updateApplication(applicationId: string, updateData: Partial<Application>): Promise<Application | null> {
+        const updatedApplication = await ApplicationModel.findByIdAndUpdate(
+                applicationId,
+                { $set: updateData },
+                { new: true, upsert: true }
+            );
+    
+            if (!updatedApplication) return null;
+    
+            return new Application({
+                id: updatedApplication._id,
+                job_id: updatedApplication.job_id,
+                user_id: updatedApplication.user_id,
+                status: updatedApplication.status,
+                quiz_score: updatedApplication.quiz_score,
+                quiz_id: updatedApplication.quiz_id
+            });
     }
 
 }
