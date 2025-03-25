@@ -51,7 +51,16 @@ class ConnectionController {
             return res.status(500).json({ success: false, message: error.message });
         }
     }
+    async findOwnUserConnection(req: AuthenticatedRequest, res: Response) {
+        try {
+            const userId = req.userId as string;
+            const connecitons = await this.connectionUseCase.findUserConnections(userId);
+            return res.status(200).json({ success: true, data: connecitons });
 
+        } catch (error: any) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    }
     async findUserConnections(req: Request, res: Response): Promise<Response> {
         try {
             const { userId } = req.params;

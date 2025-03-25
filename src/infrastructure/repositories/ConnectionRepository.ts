@@ -30,9 +30,11 @@ export class ConnectionRepository implements IConnectionRepository{
         const connections = await ConnectionModel.find({userId2: userId, status: "Pending"});
         return connections.map(connection => new Connection({id: connection.id, userId1: connection.userId1.toString(), userId2: connection.userId2.toString(), status: connection.status, requestedAt: connection.requestedAt, respondedAt: connection.respondedAt}));
     }
-    async findUserConnections(userId: string): Promise<Connection[]> {
-        const connections = await ConnectionModel.find({$or: [{userId1: userId}, {userId2: userId}]});
-        return connections.map(connection => new Connection({id: connection.id, userId1: connection.userId1.toString(), userId2: connection.userId2.toString(), status: connection.status, requestedAt: connection.requestedAt, respondedAt: connection.respondedAt}));
+    async findUserConnections(userId: string): Promise<any> {
+        const connections = await ConnectionModel.find({$or: [{userId1: userId}, {userId2: userId}]}).populate({ path: "userId1", select: "username name" }).populate({ path: "userId2", select: "username name" });
+        // console.log("fetched connections : ", connections);
+        return connections;
+        // return connections.map(connection => new Connection({id: connection.id, userId1: connection.userId1.toString(), userId2: connection.userId2.toString(), status: connection.status, requestedAt: connection.requestedAt, respondedAt: connection.respondedAt}));
     }
     async deleteConnection(id: string): Promise<boolean> {
         const deletedConnection = await ConnectionModel.findByIdAndDelete(id);

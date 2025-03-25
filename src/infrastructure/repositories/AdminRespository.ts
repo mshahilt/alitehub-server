@@ -6,8 +6,10 @@ import { IAdminRepository } from "../../application/interface/IAdminRepository";
 import AdminModel from "../database/models/AdminModel";
 import { Admin } from "../../domain/entities/Admin";
 import { UserResponse } from "../../application/useCases/UserUseCase";
+import PostModel from "../database/models/PostModel";
 
 export class AdminRepositoryImpl implements IAdminRepository {
+    
     async findAdminByEmail(email: string): Promise<Admin | null> {
         const admin = await AdminModel.findOne({email});
         if(!admin) {
@@ -19,7 +21,10 @@ export class AdminRepositoryImpl implements IAdminRepository {
         const companies = await CompanyModel.find();
         return companies.map(company => new Company({id: company.id, name: company.name, email:company.email , companyIdentifier: company.companyIdentifier, industry: company.industry, profile_picture: company.profile_picture, locations: company.locations, companyType: company.companyType, contact: company.contact, isBlock: company.isBlock}));
     }
-
+    async countOfPostsByUserId(userId: string): Promise<number> {
+        const count = await PostModel.countDocuments({ userId });
+        return count;
+    }
     async fetchCompanyById(companyId: string): Promise<Company | null> {
         const company = await CompanyModel.findById(companyId);
         return company ? new Company(company) : null;

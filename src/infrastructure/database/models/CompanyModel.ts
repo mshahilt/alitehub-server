@@ -27,7 +27,7 @@ const CompanySchema: Schema = new Schema<ICompany>({
     },
     profile_picture: { type: String, default: null },
     locations: { type: [String], default: null },
-    isBlock: { type: Boolean, default: true}
+    isBlock: { type: Boolean, default: false}
 }, {
     timestamps: true
 });

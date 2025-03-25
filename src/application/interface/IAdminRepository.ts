@@ -11,4 +11,5 @@ export interface IAdminRepository {
     fetchUserById(userId: string): Promise<User | null>;
     blockOrUnblockUser(userId: string): Promise<UserResponse | null>;
     blockOrUnblockCompany(companyId: string): Promise<Company | null>;
+    countOfPostsByUserId(userId: string): Promise<number>
 }

@@ -5,8 +5,7 @@ import { CallController } from "../controllers/CallController";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { ApplicationRepositoryImpl } from "../../infrastructure/repositories/ApplicationRepository";
 import { ApplicationUseCase } from "../../application/useCases/ApplicationUseCase";
-import { rooms } from "../../app";
-
+import { rooms } from "../../infrastructure/services/SocketHandler";
 
 const router = express.Router();
 const callRepository = new CallRepositoryImpl();
@@ -29,7 +28,8 @@ router.get("/room/:roomId", AuthMiddleware("any"), (req: Request, res: Response)
     const {roomId} = req.params;
 
     if(rooms.has(roomId)) {
-        res.json({ exists: true, participants: rooms.get(roomId).size });
+        const room = rooms.get(roomId);
+        res.json({ exists: true, participants: room ? room.size : 0 });
     } else {
         res.json({ exists: false, participants: 0 });
     }

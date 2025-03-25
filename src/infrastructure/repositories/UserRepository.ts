@@ -4,13 +4,7 @@ import UserModel from "../database/models/UserModel";
 import OtpModel from "../database/models/OtpModel";
 import { Otp } from "../../domain/entities/Otp";
 import { EmailService } from "../services/EmailService";
-import { Job } from "../../domain/entities/Job";
-import JobModel from "../database/models/JobModel";
-import { Quiz } from "../../domain/entities/Quiz";
-import QuizModel from "../database/models/QuizModel";
-import ApplicationModel from "../database/models/ApplicationModel";
-import { Application } from "../../domain/entities/Application";
-import mongoose from "mongoose";
+
 
 
 export class UserRepositoryImpl implements IUserRepository {
@@ -63,7 +57,7 @@ export class UserRepositoryImpl implements IUserRepository {
     }
     async findById(userId: string): Promise<User | null> {
         const user = await UserModel.findById(userId).select("-password");
-        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url, isBlocked: user.isBlocked }) : null;
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills,profile_picture: user.profile_picture, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url, isBlocked: user.isBlocked }) : null;
     }    
     
     async create(user:User): Promise<User> {
@@ -79,14 +73,14 @@ export class UserRepositoryImpl implements IUserRepository {
 
     async findUserByUsername(username: string): Promise<User | null> {
         const user = await UserModel.findOne({username});
-        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url }) : null;
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience,profile_picture:user.profile_picture, resume_url: user.resume_url, video_url: user.video_url }) : null;
     }
 
     async findByEmail(email: string): Promise<User | null> {
         console.log(`Finding user by email: ${email}`);
         const user = await UserModel.findOne({ email });
         console.log(`User found: ${user}`);
-        return user ? new User({id:user.id, name:user.name, username:user.username, email:user.email, password:user.password}) : null;
+        return user ? new User({id:user.id, name:user.name, profile_picture: user.profile_picture, username:user.username, email:user.email, password:user.password}) : null;
     }
 
     async findByUsername(username: string): Promise<boolean> {
@@ -108,7 +102,7 @@ export class UserRepositoryImpl implements IUserRepository {
             throw new Error("Users not found");
         }
     
-        return users.map(user => new User({ id: user.id, name: user.name, username: user.username, email: user.email }));
+        return users.map(user => new User({ id: user.id, name: user.name, profile_picture: user.profile_picture, username: user.username, email: user.email }));
     }
     async updateUserByEmail(user: User): Promise<User | null> {
         console.log("user from update repo", user)

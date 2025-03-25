@@ -190,9 +190,9 @@ export class JobUseCase {
           "https://emsiservices.com/skills/versions/latest/skills",
           {
               params: {
-                  q: query, // Search query (e.g., "React.js")
-                  typeIds: "ST1", // Only fetch Hard Skills
-                  fields: "id,name,type,infoUrl", // Only needed fields
+                  q: query,
+                  typeIds: "ST1",
+                  fields: "id,name,type,infoUrl",
               },
               headers: {
                   Authorization: `Bearer ${token}`,

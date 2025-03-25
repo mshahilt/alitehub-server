@@ -36,16 +36,20 @@ export class AdminUseCase {
              throw new Error("Invalid credentials");
         }
     }
-    async fetchAllUsers(): Promise<User[]> {
+    async fetchAllUsers(): Promise<(User & { postsShared: number })[]> {
         try {
             const users = await this.adminRepository.fetchAllUsers();
             if (!users) {
                 throw new Error("No users found");
             }
-            return users;
+            const usersWithPostsShared = await Promise.all(users.map(async (user) => {
+                const postCount = await this.adminRepository.countOfPostsByUserId(user.id);
+                return { ...user, postsShared: postCount };
+            }));
+            return usersWithPostsShared;
         } catch(error: any) {
-            console.error("Error in fetching all users for admin",error);
-            throw new Error("Error in fetching all users for admin")
+            console.error("Error in fetching all users for admin", error);
+            throw new Error("Error in fetching all users for admin");
         }
     }
     async fetchAllCompanies(): Promise<Company[]> {

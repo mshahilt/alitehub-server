@@ -14,6 +14,9 @@ router
     .post("/",AuthMiddleware("user"), async (req, res) => {
         await connectionController.createConnection(req, res);
     })
+    .get('/', AuthMiddleware("user"),async (req, res) => {
+        await connectionController.findOwnUserConnection(req, res);
+    })
     .put("/:connectionId/accept",AuthMiddleware("user"), async (req, res) => {
         await connectionController.acceptConnection(req, res);
     })

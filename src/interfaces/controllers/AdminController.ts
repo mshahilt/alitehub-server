@@ -51,4 +51,12 @@ export class AdminController {
             return res.status(400).json({message: error.message});
         }
     }
+    async createPlan(req: Request, res: Response): Promise<void> {
+        try {
+            const { name, price, interval } = req.body;
+            
+        } catch (error) {
+            
+        }
+    }
 }

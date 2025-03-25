@@ -15,6 +15,9 @@ const connectionUseCase = new ConnectionUseCase(connectionRepository);
 const createUserUseCase = new UserUseCase(userRepository);
 const userController = new UserController(createUserUseCase,connectionUseCase);
 
+router.get('/', async(req: Request, res: Response) => {
+    res.send('<h1>Server is working, Hello world!</h1>')
+})
 
 router.get('/getMe',AuthMiddleware("user"), async (req: Request, res: Response) => {
     await userController.fetchUserUsingToken(req, res);

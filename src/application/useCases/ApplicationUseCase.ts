@@ -1,7 +1,6 @@
 import { Application } from "../../domain/entities/Application";
 import JwtService from "../../infrastructure/services/JwtService";
 import { IApplicationRepository } from "../interface/IApplicationRepository";
-import { ObjectId } from 'mongoose';
 
 export class ApplicationUseCase {
     constructor(private applicationRepository: IApplicationRepository) {}

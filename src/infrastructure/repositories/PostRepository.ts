@@ -30,25 +30,27 @@ export class PostRepositoryImpl implements IPostRepository {
         return result !== null;
     }
 
-    async getAll(limit: number, page: number): Promise<Post[]> {
-        const skip = (page - 1) * limit;
-      
-        const posts = await PostModel.find()
-          .sort({ createdAt: -1 }) 
+    async getAll(limit: number, page: number): Promise<(Post & { user: { username: string; name: string } })[]> {
+      const skip = (page - 1) * limit;
+  
+      const posts = await PostModel.find()
+          .populate({ path: "userId", select: "username name" })
+          .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit);
-      
-        console.log('posts from post repo', posts);
-      
-        return posts.map((post) =>
-          new Post({
-            id: post.id,
-            media: post.media,
-            title: post.title,
-            tags: post.tags,
-            description: post.description,
-            time: post.time,
-          })
-        );
-      }
+  
+      return posts.map((post) => ({
+          id: post.id,
+          media: post.media,
+          title: post.title,
+          tags: post.tags,
+          description: post.description,
+          time: post.time,
+          userId:"",
+          user: {
+              username: (post.userId as any)?.username,
+              name: (post.userId as any)?.name
+          }
+      }));
+  }
 }

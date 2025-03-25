@@ -13,6 +13,9 @@ router.post("/login", async(req: Request, res: Response) => {
     await adminController.adminLogin(req, res);
 })
 
+router.post('/createPlan', async(req: Request, res: Response) => {
+    await adminController.createPlan(req, res);
+})
 
 router.get("/getUsers", async(req: Request, res: Response) => {
     await adminController.getAllUsers(req, res);
