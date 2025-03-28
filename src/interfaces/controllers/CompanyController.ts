@@ -107,17 +107,16 @@ export class CompanyController{
     
       async getCompanyWithToken(req: Request, res: Response): Promise<Response> {
         try {
-            console.log("fun caled")
             const token = req.headers.authorization;
             if (!token) {
                 console.log("Authorization token is missing");
                 return res.status(400).json({ message: "Authorization token is missing" });
             }
             const data = await this.companyUseCase.fetchCompanyUsingToken(token);
-    
             return res.status(200).json({
                 message: "Company data fetched successfully",
                 company: data.company,
+                subscriptionDetails: data.subscriptionDetails
             });
         } catch (error: any) {
             console.log("Error in getCompanyWithToken:", error);

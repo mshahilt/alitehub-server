@@ -8,8 +8,8 @@ export class ReviewController {
 
     async postReview(req: AuthenticatedRequest, res: Response) {
         console.log('req.body of post review',req.body)
-        const { userId, companyId, review, rating } = req.body;
-
+        const { companyId, review, rating } = req.body;
+        const userId = req.userId as string;
         try {
             const newReview = await this.reviewUseCase.addReview(userId, companyId, review, rating);
             res.status(201).json(newReview);

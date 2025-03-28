@@ -5,7 +5,7 @@ import { IMessageRepository } from "../../application/interface/IMessageReposito
 export class MessageRepository implements IMessageRepository {
     async createMessage(data: Partial<Message>): Promise<Message> {
         const createdMessage = await MessageModel.create(data);
-        return new Message({id: createdMessage.id.toString(), chatId: createdMessage.chatId.toString(), isRead: createdMessage.isRead, readAt: createdMessage.readAt, sentAt: createdMessage.sentAt, content: createdMessage.content, senderId: createdMessage.senderId});
+        return new Message({id: createdMessage.id.toString(), chatId: createdMessage.chatId.toString(), isRead: createdMessage.isRead, readAt: createdMessage.readAt, sentAt: createdMessage.sentAt, content: createdMessage.content, senderId: createdMessage.senderId.toString()});
     }
 
     async getMessageById(id: string): Promise<Message | null> {

@@ -4,35 +4,35 @@ services:
   app:
     build: .
     container_name: alitehub_server
+    restart: always  
     ports:
-      - "5000:5000"  # Map port 5000
+      - "5000:5000"
     depends_on:
       rabbitmq:
-        condition: service_healthy  # Wait for RabbitMQ to be fully ready
-    volumes:
-      - .:/app
-      - /app/node_modules
+        condition: service_healthy
+    env_file:
+      - .env
     environment:
+      - NODE_ENV=production
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=guest
       - RABBITMQ_PASS=guest
-      - CHOKIDAR_USEPOLLING=true  # Ensures file watching works in Docker
     networks:
       - app-network
-    command: ["npm", "run", "dev"]  # Ensures TypeScript hot-reloading works
 
   rabbitmq:
     image: "rabbitmq:3-management"
     container_name: rabbitmq
+    restart: always
     ports:
-      - "5672:5672"   # RabbitMQ communication port
-      - "15672:15672" # RabbitMQ management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq  # Persist RabbitMQ data
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
@@ -43,7 +43,7 @@ services:
       - app-network
 
 volumes:
-  rabbitmq_data:  # Named volume for RabbitMQ persistence
+  rabbitmq_data:
 
 networks:
   app-network:

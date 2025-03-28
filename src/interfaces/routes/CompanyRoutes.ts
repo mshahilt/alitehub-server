@@ -5,10 +5,12 @@ import { Request, Response } from "express";
 import { CompanyRepositoryImpl } from "../../infrastructure/repositories/CompanyRepository";
 import { upload } from "../../infrastructure/config/multerConfig";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
+import { SubscriptionRepositoryImpl } from "../../infrastructure/repositories/SubscriptionRepository";
 
 const router = express.Router();
+const subscriptionRepository = new SubscriptionRepositoryImpl();
 const companyRepository = new CompanyRepositoryImpl();
-const createdCompanyUseCase = new CompanyUseCase(companyRepository);
+const createdCompanyUseCase = new CompanyUseCase(companyRepository, subscriptionRepository);
 const companyController = new CompanyController(createdCompanyUseCase);
 
 router.get("/getCompany",AuthMiddleware("company"), async(req: Request, res: Response) => {

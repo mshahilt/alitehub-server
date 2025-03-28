@@ -3,10 +3,9 @@ import { ICompanyRepository } from "../interface/ICompanyRepository";
 import bcrypt from "bcrypt";
 import JwtService from "../../infrastructure/services/JwtService";
 import { GoogleAuthService } from "../../infrastructure/services/googleAuthService";
-import { GenerateQuizAiService } from "../../infrastructure/services/GeminiAiModelService";
 import { Job } from "../../domain/entities/Job";
-import { Quiz } from "../../domain/entities/Quiz";
 import { cloudinaryConfig } from "../../infrastructure/config/cloudinaryConfig";
+import { SubscriptionRepositoryImpl } from "../../infrastructure/repositories/SubscriptionRepository";
 
 export interface CompanyDTO {
     name: string;
@@ -52,7 +51,7 @@ export interface IQuizQuestion {
 }
 
 export class CompanyUseCase {
-    constructor(private companyRepository:ICompanyRepository) {}
+    constructor(private companyRepository:ICompanyRepository, private subscriptionRepository:SubscriptionRepositoryImpl) {}
     async generateOtp(email: string): Promise<string> {
         await this.companyRepository.generateOtp(email);
         return `otp generated for ${email}`;
@@ -186,7 +185,7 @@ export class CompanyUseCase {
       }
   }
   
-    async fetchCompanyUsingToken(token: string): Promise<{ company: CompanyResponse }> {
+    async fetchCompanyUsingToken(token: string): Promise<{ company: CompanyResponse; subscriptionDetails: any }> {
       try {
           const verifiedDetails = await JwtService.verifyToken(token);
           if (!verifiedDetails?.userId) {
@@ -195,6 +194,12 @@ export class CompanyUseCase {
               throw error;
           }
           const authenticatedCompany = await this.companyRepository.findCompanyById(verifiedDetails.userId);
+          if(!authenticatedCompany?.id){
+            const error: any = new Error("Cannot find company");
+              error.statusCode = 400; 
+              throw error;
+          }
+          const subscriptionDetails = await this.subscriptionRepository.getSubscriptionByCompanyId(authenticatedCompany?.id)
         
           if (!authenticatedCompany) {
               const error: any = new Error("User not found");
@@ -202,7 +207,7 @@ export class CompanyUseCase {
               throw error;
           }
   
-          return { company: authenticatedCompany };
+          return { company: authenticatedCompany, subscriptionDetails };
       } catch (error: any) {
           console.error("Error in fetchCompanyUsingToken:", error);
   
@@ -213,7 +218,7 @@ export class CompanyUseCase {
           throw error;
       }
     }
-    async getCompanyJobs(token: string): Promise<Job[] | null> {
+    async getCompanyJobs(token: string): Promise<{ jobs: Job[]; subscriptionDetails: any } | null> {
         try {
             const verifiedDetails = await JwtService.verifyToken(token);
     
@@ -224,18 +229,17 @@ export class CompanyUseCase {
             }
   
             const company = await this.companyRepository.findCompanyById(verifiedDetails.userId);
-            if(!company) {
+            if (!company) {
                 const error: any = new Error("Can't find company");
                 error.statusCode = 400;
                 throw error;
             }
-            console.log("company ksfasdkjf", company);
             const jobs = await this.companyRepository.findJobsOfCompanyById(company.id);
-            console.log("jobs ksfasdkjf", jobs);
-            if(jobs?.length === 0) {
-                return null
-            }else {
-                return jobs;
+            if (jobs?.length === 0) {
+                return null;
+            } else {
+                const subscriptionDetails = await this.subscriptionRepository.getSubscriptionByCompanyId(company.id);
+                return { jobs: jobs || [], subscriptionDetails };
             }
         } catch (error) {
             console.error("Error in fetching jobs for company:", error);

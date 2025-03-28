@@ -136,9 +136,7 @@ export class UserController {
 
     async fetchUserUsingToken(req: Request, res: Response): Promise<Response> {
         try {
-            console.log("i am called");
             const token = req.headers.authorization;
-            console.log("Authorization token:", token);
     
             if (!token) {
                 console.log("Authorization token is missing");

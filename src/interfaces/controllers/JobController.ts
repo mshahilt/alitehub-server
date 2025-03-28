@@ -7,10 +7,8 @@ export class JobController {
     
     async fetchJobs(req:Request, res: Response): Promise<Response> {
         try {
-            console.log("fun job called")
             const token: string = req.headers.authorization as string;
             const response = await this.jobUseCase.fetchJobs(token);
-            console.log("Job response", response);
             return res.status(200).json({
                 message: "Jobs fetched successfully",
                 jobs: response,

@@ -2,11 +2,12 @@ import express, { Response, Request } from "express";
 import { JobRepositoryImpl } from "../../infrastructure/repositories/JobRepository";
 import { JobUseCase } from "../../application/useCases/JobUseCase";
 import { JobController } from "../controllers/JobController";
-
+import { SubscriptionRepositoryImpl } from "../../infrastructure/repositories/SubscriptionRepository";
 
 
 const router = express.Router();
 const jobRepository = new JobRepositoryImpl();
+const subscriptionRepository = new SubscriptionRepositoryImpl()
 const createdJobUseCase = new JobUseCase(jobRepository);
 const jobController = new JobController(createdJobUseCase);
 

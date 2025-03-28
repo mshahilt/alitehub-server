@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { sendNotification } from "../config/rabbitmqConfig";
 
 interface UserData {
   socketId: string;
@@ -155,10 +156,7 @@ export const setupSocket = (io: Server): void => {
   });
 };
 export const sendMessage = (io: Server,chatId: string,message: string,senderId: string): void => {
-  const timestamp = new Date().toISOString();
-  console.log(`Sending message to chat ${chatId}`);
-  console.log(`io for debugging ${io}`);
-  
+
   if (!chatId) {
     console.error("Error: chatId is undefined");
     return;
@@ -169,10 +167,8 @@ export const sendMessage = (io: Server,chatId: string,message: string,senderId: 
     return;
   }
 
-  console.log(`Message: ${message}`);
-  console.log(`Sender ID: ${senderId}`);
-  console.log(`Timestamp: ${timestamp}`);
 
+  const timestamp = Date.now();
   io.to(chatId).emit("receiveMessage", { chatId, message, senderId, timestamp });
   console.log(`Message sent to chat ${chatId} from sender ${senderId}: ${message}`);
 };

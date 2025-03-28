@@ -4,29 +4,57 @@ import { Message } from "../../domain/entities/Message";
 import { Chat } from "../../domain/entities/Chat";
 import { sendMessage } from "../../infrastructure/services/SocketHandler";
 import { io } from "../../app";
+import { sendNotification } from "../../infrastructure/config/rabbitmqConfig";
+import { IUserRepository } from "../interface/IUserRepository";
 
 export class MessageUseCase {
-    constructor(private messageRepository: IMessageRepository, private chatRepository: IChatRepository) {}
-
+    constructor(private messageRepository: IMessageRepository, private chatRepository: IChatRepository,private userRepository: IUserRepository) {}
     async createMessage(chatId: string, content: string, senderId: string): Promise<Message> {
         try {
             const newMessage = new Message({
-                chatId: chatId,
+                chatId,
                 isRead: false,
                 content,
                 readAt: null,
-                senderId:senderId,
+                senderId,
                 sentAt: new Date(),
             });
-
+    
             const savedMessage = await this.messageRepository.createMessage(newMessage);
             sendMessage(io, chatId, content, senderId);
+    
+            console.log("chatId : ", chatId);
+            const chats = await this.chatRepository.getChatById(chatId);
+            if (!chats || !chats.participants) {
+                console.log("chats : ", chats);
+                console.error("Chat not found or has no participants.");
+                return savedMessage;
+            }
+    
+            const user = await this.userRepository.findById(senderId);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            const { username } = user; 
+            const receiverIds = chats.participants.filter((user) => user !== senderId);
+            console.log("Receiver IDs:", receiverIds);
+    
+            await Promise.all(receiverIds.map(async (receiverId) => {
+                await sendNotification({
+                    receiverId,
+                    senderId,
+                    type: "connection_request",
+                    message: `${username} sent you "${content}".`,
+                });
+            }));
+    
             return savedMessage;
         } catch (error) {
             console.error("Error creating message:", error);
             throw error;
         }
     }
+    
 
     async getMessageById(id: string): Promise<Message | null> {
         try {

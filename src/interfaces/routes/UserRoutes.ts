@@ -11,7 +11,7 @@ import { AuthMiddleware } from "../middlewares/authMiddleware";
 const router = express.Router();
 const userRepository = new UserRepositoryImpl();
 const connectionRepository = new ConnectionRepository();
-const connectionUseCase = new ConnectionUseCase(connectionRepository);
+const connectionUseCase = new ConnectionUseCase(connectionRepository, userRepository);
 const createUserUseCase = new UserUseCase(userRepository);
 const userController = new UserController(createUserUseCase,connectionUseCase);
 

@@ -19,12 +19,11 @@ router.post('/interview', AuthMiddleware("company"), async(req: Request, res: Re
     await callController.scheduleInterview(req, res);
 });
 
-// Get interview information
-router.get('/interview/:roomId', AuthMiddleware("any"), async(req: Request, res: Response) => {
+router.get('/interview/:roomId', AuthMiddleware("both"), async(req: Request, res: Response) => {
     await callController.getInterviewById(req, res);
 });
 
-router.get("/room/:roomId", AuthMiddleware("any"), (req: Request, res: Response) => {
+router.get("/room/:roomId", AuthMiddleware("both"), (req: Request, res: Response) => {
     const {roomId} = req.params;
 
     if(rooms.has(roomId)) {

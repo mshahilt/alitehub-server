@@ -4,11 +4,13 @@ import { MessageRepository } from "../../infrastructure/repositories/MessageRepo
 import { ChatRepository } from "../../infrastructure/repositories/ChatRepository";
 import express from "express";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
+import { UserRepositoryImpl } from "../../infrastructure/repositories/UserRepository";
 
 const router = express.Router();
 const messageRepository = new MessageRepository();
 const chatRepository = new ChatRepository();
-const createdMessageUseCase = new MessageUseCase(messageRepository, chatRepository);
+const userRepository = new UserRepositoryImpl();
+const createdMessageUseCase = new MessageUseCase(messageRepository, chatRepository, userRepository);
 const messageController = new MessageController(createdMessageUseCase);
 
 router.get('/', AuthMiddleware("both"), async(req, res) => {

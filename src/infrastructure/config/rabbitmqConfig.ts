@@ -52,7 +52,6 @@ export const consumeNotifications = async (io: any, userSocketMap: Map<string, s
               const message = JSON.parse(msg.content.toString());
               console.log("📩 Received notification:", message);
 
-              // Get the recipient's socket ID from the map
               const recipientSocketId = userSocketMap.get(message.receiverId);
 
               if (recipientSocketId) {

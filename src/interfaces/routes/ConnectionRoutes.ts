@@ -3,11 +3,13 @@ import { ConnectionUseCase } from "../../application/useCases/ConnectionUseCase"
 import { ConnectionRepository } from "../../infrastructure/repositories/ConnectionRepository";
 import { ConnectionController } from "../controllers/ConnectionController";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
+import { UserRepositoryImpl } from "../../infrastructure/repositories/UserRepository";
 
 
 const router = express.Router();
 const connectionRepository = new ConnectionRepository();
-const connectionUseCase = new ConnectionUseCase(connectionRepository);
+const userRepository = new UserRepositoryImpl();
+const connectionUseCase = new ConnectionUseCase(connectionRepository, userRepository);
 const connectionController = new ConnectionController(connectionUseCase);
 
 router

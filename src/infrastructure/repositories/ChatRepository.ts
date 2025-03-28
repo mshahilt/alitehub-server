@@ -21,7 +21,17 @@ export class ChatRepository implements IChatRepository {
     }
 
     async getChatById(id: string): Promise<Chat | null> {
-        return await ChatModel.findOne({ id });
+        const chat = await ChatModel.findById(id);
+        console.log("chat fom getchatById");
+        if (!chat) {
+            return null;
+        }
+
+        return new Chat({
+            id: chat.id,
+            lastMessage: chat.lastMessage as { sentAt: Date; text: string },
+            participants: chat.participants.map(participant => participant.toString())
+        });
     }
 
 
