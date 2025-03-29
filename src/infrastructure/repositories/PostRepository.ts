@@ -30,11 +30,11 @@ export class PostRepositoryImpl implements IPostRepository {
         return result !== null;
     }
 
-    async getAll(limit: number, page: number): Promise<(Post & { user: { username: string; name: string } })[]> {
+    async getAll(limit: number, page: number): Promise<(Post & { user: { username: string; name: string, profile_picture: string } })[]> {
       const skip = (page - 1) * limit;
   
       const posts = await PostModel.find()
-          .populate({ path: "userId", select: "username name" })
+          .populate({ path: "userId", select: "username name profile_picture" })
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit);
@@ -49,7 +49,8 @@ export class PostRepositoryImpl implements IPostRepository {
           userId:"",
           user: {
               username: (post.userId as any)?.username,
-              name: (post.userId as any)?.name
+              name: (post.userId as any)?.name,
+              profile_picture:(post.userId as any)?.profile_picture
           }
       }));
   }

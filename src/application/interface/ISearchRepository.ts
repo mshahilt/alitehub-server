@@ -7,6 +7,7 @@ export interface SearchResults {
     users: User[];
     posts: Post[];
     jobs: Job[];
+    companies: Company[];
 }
 export type RecentSearch = (User | Post | Job | Company)[];
 

@@ -123,7 +123,26 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
         }
     }
     
-    
+    async getAllCompanies(): Promise<Company[]> {
+        try {
+            const companies = await CompanyModel.find().select("-password");
+            return companies.map(company => new Company({
+                id: company.id,
+                name: company.name,
+                email: company.email,
+                companyIdentifier: company.companyIdentifier,
+                industry: company.industry,
+                companyType: company.companyType,
+                contact: company.contact,
+                profile_picture: company.profile_picture,
+                locations: company.locations,
+                isBlock: company.isBlock
+            }));
+        } catch (error) {
+            console.error("Error fetching all companies:", error);
+            throw new Error("Could not fetch companies");
+        }
+    }
     
     
 }

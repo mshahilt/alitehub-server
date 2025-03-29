@@ -13,10 +13,12 @@ const companyRepository = new CompanyRepositoryImpl();
 const createdCompanyUseCase = new CompanyUseCase(companyRepository, subscriptionRepository);
 const companyController = new CompanyController(createdCompanyUseCase);
 
+router.get('/getAll', AuthMiddleware("both"), async(req: Request, res: Response) => {
+    await companyController.getAllCompanies(req,res);
+})
 router.get("/getCompany",AuthMiddleware("company"), async(req: Request, res: Response) => {
     await companyController.getCompanyWithToken(req, res);
 })
-
 router.get("/job/get",AuthMiddleware("company"), async(req: Request, res: Response) => {
     await companyController.getCompanyJobs(req, res);
 })

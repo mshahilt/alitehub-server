@@ -194,5 +194,19 @@ export class CompanyController{
             });
         }
     }
-    
+
+    async getAllCompanies(req: Request, res: Response): Promise<Response> {
+        try {
+            const companies = await this.companyUseCase.getAllCompanies();
+            return res.status(200).json({
+                message: "Companies fetched successfully",
+                data: companies,
+            });
+        } catch (error: any) {
+            console.error("Error in getAllCompanies:", error);
+            return res.status(error.statusCode || 500).json({
+                message: error.message || "An unknown error occurred",
+            });
+        }
+    }
 }

@@ -10,7 +10,7 @@ export interface ICompanyRepository {
     findCompanyByCompanyIdentifier(companyIdentifier: string): Promise<Company | null>
     findJobsOfCompanyById(companyId: string):  Promise<Job[] | null>;
     updateCompanyById(companyId: string,  companyData: Partial<Company>): Promise<Company | null>
+    getAllCompanies(): Promise<Company[]>;
     // updateCompany(companyId: string, company: Partial<Company>): Promise<Company | null>;
     // deleteCompany(companyId: string): Promise<boolean>;
-    // getAllCompanies(): Promise<Company[]>;
 }

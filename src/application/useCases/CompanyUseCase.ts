@@ -288,7 +288,16 @@ export class CompanyUseCase {
         try {
             return this.companyRepository.updateCompanyById(companyId,companyData);
         } catch (error) {
-            
+            console.error(error);
+            throw error;
+        }
+    }
+    async getAllCompanies(): Promise<Company[]> {
+        try {
+            return await this.companyRepository.getAllCompanies();
+        } catch (error) {
+            console.error("Error in getAllCompanies:", error);
+            throw new Error("Failed to fetch companies");
         }
     }
 }

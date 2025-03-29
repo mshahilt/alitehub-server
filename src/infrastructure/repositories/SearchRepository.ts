@@ -3,10 +3,12 @@ import { SearchResults, RecentSearch } from "../../application/interface/ISearch
 import UserModel from "../database/models/UserModel";
 import PostModel from "../database/models/PostModel";
 import JobModel from "../database/models/JobModel";
+import CompanyModel from "../database/models/CompanyModel";
 import { RecentSeachModel } from "../database/models/RecentSearchModel";
 import { User } from "../../domain/entities/User";
 import { Post } from "../../domain/entities/Post";
 import { Job } from "../../domain/entities/Job";
+import { Company } from "../../domain/entities/Company";
 
 
 export class SearchRepositoryImpl implements ISearchRepository {
@@ -15,7 +17,8 @@ export class SearchRepositoryImpl implements ISearchRepository {
        const results: SearchResults = {
         users: [],
         posts: [],
-        jobs: []
+        jobs: [],
+        companies: []
         };
 
         if (filter === 'users' || filter === 'all') {
@@ -55,7 +58,18 @@ export class SearchRepositoryImpl implements ISearchRepository {
             }));
         }
 
-    return results;
+        if (filter === 'companies' || filter === 'all') {
+            const companies = await CompanyModel.find({ $or: [{ name: regex }, { description: regex }] }).limit(10);
+            results.companies = companies.map(company => new Company({
+                id: company.id,
+                name: company.name,
+                locations: company.locations,
+                industry: company.industry,
+                profile_picture: company.profile_picture
+            }))
+        }
+
+        return results;
     }
 
     async getRecentSearches(userId: string): Promise<RecentSearch[]> {
