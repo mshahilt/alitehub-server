@@ -24,6 +24,9 @@ router.post("/", (req, res) => planController.createPlan(req, res));
 router.post('/subscribe', AuthMiddleware("company"), async (req, res) => {
     await planController.subscribe(req, res);
 })
+router.get('/company',AuthMiddleware("company"), async (req, res) => {
+    await planController.getSubscribedPlans(req, res);
+})
 router.get("/:planId", (req, res) => planController.getPlanById(req, res));
 router.get("/", (req, res) => planController.getAllPlans(req, res));
 router.put("/:planId", (req, res) => planController.updatePlan(req, res));

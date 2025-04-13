@@ -69,5 +69,13 @@ export class PlanUseCase {
 
         return createdSubscription;
     }
+    async getSubscribedPlan(companyId: string) {
+        try {
+            return await this.subscriptionRepository.getSubscriptionByCompanyId(companyId);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
     
 }

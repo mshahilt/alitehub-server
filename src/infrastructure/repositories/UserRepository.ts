@@ -57,7 +57,7 @@ export class UserRepositoryImpl implements IUserRepository {
     }
     async findById(userId: string): Promise<User | null> {
         const user = await UserModel.findById(userId).select("-password");
-        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills,profile_picture: user.profile_picture, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url, isBlocked: user.isBlocked }) : null;
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, is_active: user.is_active, about: user.about, contact: user.contact, education: user.education, skills: user.skills,profile_picture: user.profile_picture, experience: user.experience, resume_url: user.resume_url, video_url: user.video_url, isBlocked: user.isBlocked }) : null;
     }    
     
     async create(user:User): Promise<User> {
@@ -68,19 +68,19 @@ export class UserRepositoryImpl implements IUserRepository {
             username: user.username,
             profile_picture: user.profile_picture,
         });
-        return new User({id:createdUser.id, name:createdUser.name, username:createdUser.username, email:createdUser.email, password:createdUser.password});
+        return new User({id:createdUser.id, name:createdUser.name, username:createdUser.username,is_active: user.is_active, about: user.about, email:createdUser.email, password:createdUser.password});
     }
 
     async findUserByUsername(username: string): Promise<User | null> {
         const user = await UserModel.findOne({username});
-        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience,profile_picture:user.profile_picture, resume_url: user.resume_url, video_url: user.video_url }) : null;
+        return user ? new User({ id: user.id, name: user.name, username: user.username, email: user.email,is_active: user.is_active, about: user.about, contact: user.contact, education: user.education, skills: user.skills, experience: user.experience,profile_picture:user.profile_picture, resume_url: user.resume_url, video_url: user.video_url }) : null;
     }
 
     async findByEmail(email: string): Promise<User | null> {
         console.log(`Finding user by email: ${email}`);
         const user = await UserModel.findOne({ email });
         console.log(`User found: ${user}`);
-        return user ? new User({id:user.id, name:user.name, profile_picture: user.profile_picture, username:user.username, email:user.email, password:user.password}) : null;
+        return user ? new User({id:user.id, name:user.name, profile_picture: user.profile_picture,is_active: user.is_active, about: user.about, username:user.username, email:user.email, password:user.password}) : null;
     }
 
     async findByUsername(username: string): Promise<boolean> {
@@ -102,10 +102,9 @@ export class UserRepositoryImpl implements IUserRepository {
             throw new Error("Users not found");
         }
     
-        return users.map(user => new User({ id: user.id, name: user.name, profile_picture: user.profile_picture, username: user.username, email: user.email }));
+        return users.map(user => new User({ id: user.id, name: user.name, profile_picture: user.profile_picture,is_active: user.is_active, about: user.about, username: user.username, email: user.email }));
     }
     async updateUserByEmail(user: User): Promise<User | null> {
-        console.log("user from update repo", user)
         const updatedUser = await UserModel.findOneAndUpdate(
             { 
                 $or: [
@@ -115,6 +114,7 @@ export class UserRepositoryImpl implements IUserRepository {
             },
             {
                 name: user.name,
+                about: user.about,
                 username: user.username,
                 contact: user.contact,
                 profile_picture: user.profile_picture,
@@ -140,8 +140,6 @@ export class UserRepositoryImpl implements IUserRepository {
             },
             { new: true, runValidators: true }
         );
-
-        console.log("repos await", updatedUser?.name);
     
         if (!updatedUser) {
             throw new Error("User not found");

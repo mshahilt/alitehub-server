@@ -77,8 +77,6 @@ export class UserUseCase {
       }
       async googleAuthenticate(token: string) {
         const googleUser = await GoogleAuthService.verifyGoogleToken(token);
-
-        console.log("user from google", googleUser);
         
         let user = await this.userRepository.findByEmail(googleUser.email);
         const role = "user";
@@ -89,7 +87,6 @@ export class UserUseCase {
             username += Math.floor(1000 + Math.random() * 9000).toString(); 
           }
           user = new User({
-            id: Date.now().toString(),
             name: googleUser.name,
             email: googleUser.email,
             profile_picture,

@@ -84,6 +84,22 @@ export class PlanController {
             res.status(500).json({ error: error.message });
         }
     }
+    async getSubscribedPlans(req: AuthenticatedRequest, res: Response) {
+        try {
+            const companyId = req.userId as string;
+            if (!companyId) {
+                return res.status(400).json({ error: "Authentication failed" });
+            }
+            const subscribedPlan = await this.planUseCase.getSubscribedPlan(companyId);
+            if (subscribedPlan) {
+                return res.status(200).json(subscribedPlan);
+            } else {
+                return res.status(404).json({ message: "No subscribed plan found" });
+            }
+        } catch (error: any) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
 
    
 }

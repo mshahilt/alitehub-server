@@ -38,6 +38,7 @@ export class User {
     public name!: string;
     public username!: string;
     public email!: string;
+    public about!: string;
     public password?: string;
     public contact?: { phone?: string | null };
     public profile_picture?: string | null;
