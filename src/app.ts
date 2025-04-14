@@ -34,7 +34,7 @@ const app: Express = express();
 const server: HttpServer = createServer(app);
 export const io: Server = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://alitehub.vercel.app"],
+    origin: ["http://localhost:5173", "https://alitehub.vercel.app", "https://alitehub.site", "http://alitehub.site"],
     credentials: true,
   },
 });
@@ -42,7 +42,7 @@ export const io: Server = new Server(server, {
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://alitehub.vercel.app"],
+    origin: ["http://localhost:5173", "https://alitehub.vercel.app", "https://alitehub.site", "http://alitehub.site"],
     credentials: true,
   })
 );
