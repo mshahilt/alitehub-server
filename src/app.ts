@@ -73,7 +73,7 @@ const startServer = async (): Promise<void> => {
     await connectRabbitMQ();
     await consumeNotifications(io, userSocketMap);
 
-    const PORT: string | number = process.env.PORT || 5000;
+    const PORT: string | number = process.env.PORT || 3000;
     server.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
   } catch (error) {
     console.error("Error starting the server:", error);
