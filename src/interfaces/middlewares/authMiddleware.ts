@@ -17,8 +17,8 @@ export const AuthMiddleware = (requiredRole: string) =>
 
         try {
             const decoded = await JwtService.verifyToken(token) as DecodedToken;
-            
-            if (!decoded || (requiredRole === "both" ? !["user", "company"].includes(decoded.role) : decoded.role !== requiredRole)) {
+            console.log("decoded :", decoded);
+            if (!decoded || (requiredRole === "both" ? !["user", "company", "admin"].includes(decoded.role) : decoded.role !== requiredRole)) {
                 return void res.status(403).json({ message: "Forbidden: Insufficient permissions" });
             }
             

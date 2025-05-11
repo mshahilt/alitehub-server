@@ -37,7 +37,7 @@ router.get('/getSignedUploadUrl', async (req: Request, res: Response) => {
 router.post('/uploadResume', pdfUpload.single("pdf"),async(req: Request, res: Response) => {
     await userController.updateResume(req, res);
 })
-router.get('/:username',AuthMiddleware("user"), async (req: Request, res: Response) => {
+router.get('/:username',AuthMiddleware("both"), async (req: Request, res: Response) => {
     await userController.fetchProfile(req, res)
 });
 

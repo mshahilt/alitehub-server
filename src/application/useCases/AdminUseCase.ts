@@ -36,9 +36,10 @@ export class AdminUseCase {
              throw new Error("Invalid credentials");
         }
     }
-    async fetchAllUsers(): Promise<(User & { postsShared: number })[]> {
+    async fetchAllUsers(limit: string): Promise<(User & { postsShared: number })[]> {
         try {
-            const users = await this.adminRepository.fetchAllUsers();
+            const fetchLimit = Number(limit);
+            const users = await this.adminRepository.fetchAllUsers(fetchLimit);
             if (!users) {
                 throw new Error("No users found");
             }

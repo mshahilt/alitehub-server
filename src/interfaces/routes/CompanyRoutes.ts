@@ -29,7 +29,7 @@ router.put('/updateProfile', async (req, res) => {
     await companyController.updateCompanyDetails(req, res);
 });
 
-router.get('/:companyIdentifier',AuthMiddleware("company"), async (req: Request, res: Response) => {
+router.get('/:companyIdentifier',AuthMiddleware("both"), async (req: Request, res: Response) => {
     await companyController.fetchProfile(req, res)
 })
     

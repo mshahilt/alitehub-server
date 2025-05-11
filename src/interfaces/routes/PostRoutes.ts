@@ -19,10 +19,10 @@ router
     .get("/:id", AuthMiddleware("both"), async (req, res) => {
         await postController.getPostById(req, res);
     })
-    .get("/user/:user_id/count", AuthMiddleware("user"), async (req, res) => {
+    .get("/user/:user_id/count", AuthMiddleware("both"), async (req, res) => {
         await postController.getPostsCountByUserId(req, res);
     })
-    .get("/user/:user_id", AuthMiddleware("user"), async (req, res) => {
+    .get("/user/:user_id", AuthMiddleware("both"), async (req, res) => {
         await postController.getPostsByUserId(req, res);
     })
     .put("/:id", AuthMiddleware("user"), async (req, res) => {

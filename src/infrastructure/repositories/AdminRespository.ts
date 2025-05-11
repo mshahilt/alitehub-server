@@ -30,8 +30,8 @@ export class AdminRepositoryImpl implements IAdminRepository {
         return company ? new Company(company) : null;
     }
 
-    async fetchAllUsers(): Promise<User[]> {
-        const users = await UserModel.find();
+    async fetchAllUsers(limit: number): Promise<User[]> {
+        const users = await UserModel.find().limit(limit);
         return users.map(user => new User({ id: user.id, name: user.name, username: user.username, email: user.email, isBlocked: user.isBlocked }));
     }
 

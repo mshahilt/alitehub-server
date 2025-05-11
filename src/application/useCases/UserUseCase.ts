@@ -146,8 +146,21 @@ export class UserUseCase {
               error.statusCode = 401;
               throw error;
           }
-  
+          if(verifiedDetails.role === "admin"){
+            const requestedUser = await this.userRepository.findUserByUsername(username);
+            if (!requestedUser) {
+                const error: any = new Error("User not found");
+                error.statusCode = 404;
+                throw error;
+            }
+    
+            return {
+                user: requestedUser,
+                ownUserAcc: false,
+            };
+          }
           const authenticatedUser = await this.userRepository.findById(verifiedDetails.userId);
+          console.log("verifiedDetails.userId : ", verifiedDetails.userId);
           if (!authenticatedUser) {
               const error: any = new Error("User not found");
               error.statusCode = 401;

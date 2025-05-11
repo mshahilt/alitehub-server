@@ -10,19 +10,19 @@ const createdSearchUseCase = new SearchUseCase(searchRepository);
 const searchController = new SearchController(createdSearchUseCase);
 
 router
-    .get('/',AuthMiddleware("user"), async (req, res) => {
+    .get('/',AuthMiddleware("both"), async (req, res) => {
     await searchController.search(req, res);
     })
-    .get('/recent',AuthMiddleware("user"), async (req, res) => {
+    .get('/recent',AuthMiddleware("both"), async (req, res) => {
     await searchController.getRecentSearches(req, res);
     })
-    .post('/recent',AuthMiddleware("user"), async (req, res) => {
+    .post('/recent',AuthMiddleware("both"), async (req, res) => {
     await searchController.saveRecentSearch(req, res);
     })
-    .delete('/recent',AuthMiddleware("user"), async (req, res) => {
+    .delete('/recent',AuthMiddleware("both"), async (req, res) => {
     await searchController.deleteAllRecentSearches(req, res);
     })
-    .get('/explore',AuthMiddleware("user"), async (req, res) => {
+    .get('/explore',AuthMiddleware("both"), async (req, res) => {
     await searchController.getExplorePosts(req, res);
     });
 

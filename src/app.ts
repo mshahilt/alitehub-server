@@ -70,7 +70,7 @@ setupSocket(io);
 const startServer = async (): Promise<void> => {
   try {
     await connectDB();
-    await connectRabbitMQ();
+    // await connectRabbitMQ();
     await consumeNotifications(io, userSocketMap);
 
     const PORT: string | number = process.env.PORT || 3000;

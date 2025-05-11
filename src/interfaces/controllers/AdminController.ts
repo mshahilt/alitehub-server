@@ -17,7 +17,8 @@ export class AdminController {
 
     async getAllUsers(req: Request, res: Response): Promise<Response> {
         try {
-            const users = await this.adminUseCase.fetchAllUsers();
+            const limit = req.query.limit as string;
+            const users = await this.adminUseCase.fetchAllUsers(limit);
             return res.status(200).json({message: "Users data fetched successfully", users});
         } catch (error: any) {
             return res.status(400).json({message: error.message});

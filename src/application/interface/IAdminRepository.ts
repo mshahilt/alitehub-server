@@ -7,7 +7,7 @@ export interface IAdminRepository {
     fetchAllCompanies(): Promise<Company[]>;
     fetchCompanyById(companyId: string): Promise<Company | null>;
     findAdminByEmail(email: string): Promise<Admin | null>;
-    fetchAllUsers(): Promise<User[] | null>;
+    fetchAllUsers(limit: number): Promise<User[] | null>;
     fetchUserById(userId: string): Promise<User | null>;
     blockOrUnblockUser(userId: string): Promise<UserResponse | null>;
     blockOrUnblockCompany(companyId: string): Promise<Company | null>;
