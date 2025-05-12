@@ -152,6 +152,16 @@ export class CompanyUseCase {
             };  
           }
   
+          if(verifiedDetails.role === "user") {
+            const requestedCompany = await this.companyRepository.findCompanyByCompanyIdentifier(
+                companyIdentifier
+            );
+            return {
+                company: requestedCompany || (() => { throw { statusCode: 404, message: "Company not found" }; })(),
+                ownUserAcc: false,
+            };  
+          }
+  
           if (verifiedDetails.role !== "company") {
               throw { statusCode: 400, message: "Token mismatch: Role is not 'company'" };
           }
